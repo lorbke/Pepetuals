@@ -1,72 +1,110 @@
 State.init({
 	address: undefined,
-  });
-  
-  const getEVMAccountId = () => {
+	chainId: undefined,
+	long: true,
+	input: 0,
+	perpetual: false,
+	leverage: 1
+});
+
+const contractABI = fetch("https://raw.githubusercontent.com/lorbke/ETHGlobal-New-York/MultiLSP/contract_abi.json");
+if (!contractABI.ok) {
+	return (<>
+		<div className="spinner-border" role="status">
+			<span className="visually-hidden">Loading...</span>
+		</div>
+	</>);
+}
+const contractData = fetch("https://raw.githubusercontent.com/lorbke/ETHGlobal-New-York/MultiLSP/contract_data.json");
+if (!contractData.ok) {
+	return (<>
+		<div className="spinner-border" role="status">
+			<span className="visually-hidden">Loading...</span>
+		</div>
+	</>);
+}
+
+const getAccountId = () => {
 	if (ethers !== undefined) {
-	  return Ethers.send("eth_requestAccounts", [])[0] ?? "";
+		return Ethers.send("eth_requestAccounts", [])[0] ?? context.accountId;
 	}
-	return "";
-  };
-  const currentAccountId =
-	getEVMAccountId() !== "" ? getEVMAccountId() : context.accountId;
-  if (currentAccountId !== null) {
+	return context.accountId;
+};
+if (getAccountId() !== null) {
 	// TODO: causes error when near wallet???
 	Ethers.provider()
-	  .getNetwork()
-	  .then((chainIdData) => {
+		.getNetwork()
+		.then((chainIdData) => {
 		if (chainIdData?.chainId) {
-		  State.update({
-			address: currentAccountId,
+			State.update({
+			address: getAccountId(),
 			chainId: chainIdData.chainId,
-		  });
+			});
 		}
-	  });
-  }
-  
-  const ValueInput = styled.input`
-	  filter: none;
-	  opacity: 1;
-	  transition: opacity 0.2s ease-in-out 0s;
-	  text-align: left;
-	  font-size: 36px !important;
-	  line-height: 44px !important;
-	  font-variant: small-caps;
-	  color: rgb(13, 17, 28);
-	  // width: 0px;
-	  position: relative;
-	  font-weight: 400;
-	  outline: none;
-	  border: none;
-	  flex: 1 1 auto;
-	  background-color: transparent;
-	  white-space: nowrap;
-	  overflow: hidden !important;
-	  text-overflow: ellipsis;
-	  padding: 0px;
-	  appearance: textfield;
-  `;
-  const InputContainer = () => {
-	return (
-	  <div className="bg-light rounded p-2 d-flex">
-		<ValueInput
-		  inputmode="decimal"
-		  autocomplete="off"
-		  autocorrect="off"
-		  type="text"
-		  pattern="^[0-9]*[.,]?[0-9]*$"
-		  placeholder="0"
-		  minlength="1"
-		  maxlength="9"
-		  spellcheck="false"
-		  value={state["input"]}
-		/>
-		<button className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "100px" }} disabled>ghhg</button>
-	  </div>
-	);
-  };
+	});
+}
 
-  const ToggleDiv = styled.div`
+const approveOrder = () => {
+	const ctr = new ethers.Contract(
+		JSON.parse(contractData.body)[state.chainId.toString()].contractAddress,
+		contractABI.body,
+		Ethers.provider().getSigner()
+	);
+	ctr.buy({name: ethers.utils.formatBytes32String("Arsch"), long: state.long, period: state.perpetual == true ? 1 : 4294967295, leverage: state.leverage}, parseFloat(state.input)).then((test) => {
+		console.log(test);
+	});
+};
+
+const MainStyle = styled.div`
+	.btn:focus {
+		outline: none !important;
+		box-shadow: none !important;
+	}
+`
+  
+const ValueInput = styled.input`
+	filter: none;
+	opacity: 1;
+	transition: opacity 0.2s ease-in-out 0s;
+	text-align: left;
+	font-size: 36px !important;
+	line-height: 44px !important;
+	font-variant: small-caps;
+	color: rgb(13, 17, 28);
+	// width: 0px;
+	position: relative;
+	font-weight: 400;
+	outline: none;
+	border: none;
+	flex: 1 1 auto;
+	background-color: transparent;
+	white-space: nowrap;
+	overflow: hidden !important;
+	text-overflow: ellipsis;
+	padding: 0px;
+	appearance: textfield;
+`;
+const InputContainer = (statename) => {
+	return (
+	<div className="bg-light rounded p-2 d-flex">
+		<ValueInput
+			inputmode="decimal"
+			autocomplete="off"
+			autocorrect="off"
+			type="text"
+			pattern="^[0-9]*[.,]?[0-9]*$"
+			placeholder="0"
+			minlength="1"
+			maxlength="9"
+			spellcheck="false"
+			value={state[statename]}
+		/>
+		<button className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "100px" }} disabled>USDC</button>
+	</div>
+	);
+};
+
+const ToggleDiv = styled.div`
 	.toggle {
 		position: relative;
 		box-sizing: border-box;
@@ -117,19 +155,19 @@ State.init({
 	.toggle input[type="checkbox"]:checked + label:after {
 		left: 35px;
 	}
-  `
-  const ToggleSwitch = () => {
+`;
+const ToggleSwitch = ({onChange, value}) => {
 	return (
 		<ToggleDiv>
 			<div className="toggle">
-				<input type="checkbox"/>
-    			<label></label>
+				<input type="checkbox" onChange={onChange} checked={value}/>
+				<label></label>
 			</div>
 		</ToggleDiv>
 	)
-  };
+};
   
-  return (
+return (<MainStyle>
 	<div className="h-100 w-100 d-flex justify-content-center">
 	  <div
 		className="card shadow m-2 border-0 rounded-xl"
@@ -142,10 +180,10 @@ State.init({
 	  >
 		<div className="card-body mx-auto d-flex flex-column w-100">
 		  <div className="btn-group mb-3" role="group" aria-label="Basic example">
-			<button type="button" className="btn btn-primary active">
+			<button type="button" className={"btn btn-primary" + (state.long == true ? " active" : "")} onClick={() => State.update({ long: true })}>
 			  Long
 			</button>
-			<button type="button" className="btn btn-primary">
+			<button type="button" className={"btn btn-primary" + (state.long != true ? " active" : "")} onClick={() => State.update({ long: false })}>
 			  Short
 			</button>
 		  </div>
@@ -175,19 +213,19 @@ State.init({
 			  </svg>
 			</div>
 		  </div>
-		  <InputContainer />
+		  {InputContainer("input")}
 		  <div className="d-flex justify-content-between align-items-center my-2">
 			<label>Perpetual</label>
-			<ToggleSwitch/>
+			<ToggleSwitch onChange={(e) => State.update({ perpetual: e.target.checked })} value={state.perpetual}/>
 		  </div>
 		  <div className="d-flex justify-content-between align-items-center my-2">
 			<label>Leverage 2x</label>
-			<ToggleSwitch/>
+			<ToggleSwitch onChange={(e) => State.update({ leverage: (e.target.checked == true ? 2 : 1) })} value={state.leverage == 2}/>
 		  </div>
 		  <button
-			type="button"
 			className="btn btn-primary my-3"
 			style={{ height: "50px" }}
+			onClick={approveOrder}
 			>
 			Approve Order
 			</button>
@@ -200,4 +238,4 @@ State.init({
 		</div>
 	  </div>
 	</div>
-);  
+</MainStyle>);  
