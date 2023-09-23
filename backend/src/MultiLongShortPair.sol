@@ -17,27 +17,12 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-// @todo remove
-// struct CreatorParams {
-//     string pairName;
-//     uint64 expirationTimestamp;
-//     uint256 collateralPerPair;
-//     bytes32 priceIdentifier;
-//     bool enableEarlyExpiration;
-//     string longSynthName;
-//     string longSynthSymbol;
-//     string shortSynthName;
-//     string shortSynthSymbol;
-//     IERC20Standard collateralToken;
-//     LongShortPairFinancialProductLibrary financialProductLibrary;
-//     bytes customAncillaryData;
-//     uint256 proposerReward;
-//     uint256 optimisticOracleLivenessTime;
-//     uint256 optimisticOracleProposerBond;
-// }
-
 contract MultiLongShortPair is Test {
 	using SafeERC20 for IERC20;
+
+	/*------------------------------------------------------------------------------------*/
+	/* 	DATA STRUCTURE                                                                    */
+	/*------------------------------------------------------------------------------------*/
 
 	uint256 constant PERIOD_LENGTH = 120 days;
 
@@ -59,6 +44,10 @@ contract MultiLongShortPair is Test {
 	TokenFactory tokenFactory;
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
+
+	/*------------------------------------------------------------------------------------*/
+	/* 	CONSTRUCTOR                                                                       */
+	/*------------------------------------------------------------------------------------*/
 
 	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper, address _finder) {
 		name = _name;
@@ -95,8 +84,11 @@ contract MultiLongShortPair is Test {
 		_newFuturePeriod();
 	}
 
-	function printLspParams() public view 
-	{
+	/*------------------------------------------------------------------------------------*/
+	/* 	HELPER FUNCTIONS                                                                  */
+	/*------------------------------------------------------------------------------------*/
+
+	function printLspParams() public view {
 		console.log(lspParams.pairName);
 		console.log(lspParams.expirationTimestamp);
 		console.log(lspParams.collateralPerPair);
@@ -143,6 +135,10 @@ contract MultiLongShortPair is Test {
 			startTimestamp: block.timestamp
 		});
 	}
+
+	/*------------------------------------------------------------------------------------*/
+	/* 	EXTERNAL FUNCTIONS                                                                */
+	/*------------------------------------------------------------------------------------*/
 
 	function newFuturePeriod() public {
 		require(block.timestamp > futures[newestFutureId].startTimestamp + PERIOD_LENGTH - 30 days, "Too early to create new period");
