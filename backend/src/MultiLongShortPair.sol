@@ -106,11 +106,11 @@ contract MultiLongShortPair {
 		_newFuturePeriod();
 	}
 
-	function getFuturePeriod(uint32 futureId) public view returns (FuturePeriod memory future) {
-		return futures[futureId];
+	function getLsp(uint32 futureId) public view returns (LongShortPair lsp) {
+		return futures[futureId].lsp;
 	}
 
-	function getNewestFuturePeriod() public view returns (FuturePeriod memory future) {
-		return futures[newestFutureId];
+	function getNewestLsp() public view returns (LongShortPair lsp) {
+		return futures[newestFutureId].lsp;
 	}
 }
