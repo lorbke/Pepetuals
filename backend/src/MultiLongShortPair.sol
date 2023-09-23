@@ -43,7 +43,6 @@ contract MultiLongShortPair {
 	bytes32 public name;
 	mapping(uint32 => FuturePeriod) public futures;
 	uint32 public newestFutureId = 0;
-	IERC20 collateral;
 
 	LinearLongShortPairFinancialProductLibrary settlementType;
 	FinderInterface finder;
@@ -58,7 +57,6 @@ contract MultiLongShortPair {
 		finder = FinderInterface(0xE60dBa66B85E10E7Fd18a67a6859E241A243950e);
 		tokenFactory = new TokenFactory();
 		lspCreator = new LongShortPairCreator(finder, tokenFactory, address(0));
-		collateral = _collateral;
 		lspParams = LongShortPairCreator.CreatorParams({
 			pairName: "",
 			expirationTimestamp: 0,
@@ -69,7 +67,7 @@ contract MultiLongShortPair {
 			longSynthSymbol: "",
 			shortSynthName: "",
 			shortSynthSymbol: "",
-			collateralToken: collateral,
+			collateralToken: _collateral,
 			financialProductLibrary: settlementType,
 			customAncillaryData: bytes(""),
 			proposerReward: 100000,
