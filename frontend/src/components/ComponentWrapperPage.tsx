@@ -1,5 +1,4 @@
 import { VmComponent } from '@/components/vm/VmComponent';
-import styled from 'styled-components';
 import { MetaTags } from './MetaTags';
 
 type Props = {
@@ -17,7 +16,7 @@ export function ComponentWrapperPage(props: Props) {
     <>
       {props.meta && <MetaTags {...props.meta} />}
 
-      <div className={props.className}>
+      <div className={"local-bootstrap " + props.className}>
         <VmComponent src={props.src} props={props.componentProps} />
       </div>
     </>
