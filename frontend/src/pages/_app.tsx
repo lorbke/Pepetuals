@@ -5,6 +5,8 @@ import '@near-wallet-selector/modal-ui/styles.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import 'react-bootstrap-typeahead/css/Typeahead.bs5.css';
 
+import '@/data/web3';
+
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
@@ -13,6 +15,9 @@ import { Toaster } from '@/components/lib/Toast';
 import { useBosLoaderInitializer } from '@/hooks/useBosLoaderInitializer';
 import { useHashUrlBackwardsCompatibility } from '@/hooks/useHashUrlBackwardsCompatibility';
 import type { NextPageWithLayout } from '@/utils/types';
+
+import {NextUIProvider} from '@nextui-org/react'
+import {ThemeProvider as NextThemesProvider} from "next-themes";
 
 const VmInitializer = dynamic(() => import('../components/vm/VmInitializer'), {
   ssr: false,
@@ -36,7 +41,11 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 
       <VmInitializer />
 
-      {getLayout(<Component {...pageProps} />)}
+      <NextUIProvider>
+        <NextThemesProvider attribute="class" defaultTheme="light">
+          {getLayout(<Component {...pageProps} />)}
+        </NextThemesProvider>
+      </NextUIProvider>
 
       <Toaster />
     </>

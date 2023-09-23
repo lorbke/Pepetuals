@@ -1,11 +1,11 @@
-import { useBosComponents } from '@/hooks/useBosComponents';
 import { useDefaultLayout } from '@/hooks/useLayout';
 import type { NextPageWithLayout } from '@/utils/types';
 import { ComponentWrapperPage } from '@/components/ComponentWrapperPage';
 
 const HomePage: NextPageWithLayout = () => {
-  const components = useBosComponents();
-  return <ComponentWrapperPage src={components.home} />;
+  return (<div className='w-full !py-3'>
+    <ComponentWrapperPage src="pauldev.near/widget/Test.Component1" className='flex'/>
+  </div>);
 };
 
 HomePage.getLayout = useDefaultLayout;

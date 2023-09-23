@@ -78,11 +78,8 @@ export const onboard = init({
     icon: icon.content,
     description: 'NEAR - BOS',
   },
-  theme: 'dark',
-  containerElements: {
-    // connectModal: '#near-social-navigation-bar',
-    // accountCenter: "#near-social-web3-account",
-  },
+  theme: 'system',
+  containerElements: {},
 });
 
 type EthersProviderContext = {

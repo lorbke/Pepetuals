@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { MainHeader } from '../MainHeader';
+import { MainNavbar } from '@/components/Navbar';
 
 interface Props {
   children: ReactNode;
@@ -9,7 +10,7 @@ interface Props {
 export function DefaultLayout({ children }: Props) {
   return (
     <>
-      <MainHeader />
+      <MainNavbar />
       {children}
     </>
   );
