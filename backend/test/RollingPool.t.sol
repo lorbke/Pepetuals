@@ -25,84 +25,96 @@ contract RollingPoolTest is Test {
     function setUp() public {
         currency = new FutureMock("asd", "asd");
         lsp = new MultiLongShortPair(currency);
-        // PairToken asd = lsp.getActiveLong();
-        // PairToken asd2 = lsp.activeFuture().longToken;
-        // lsp.activeFuture().longToken.approve(address(this), 1000);
-        // lsp.getActiveLong().approve(address(this), 1000);
         pool = new RollingPool(lsp);
-        currency.mint(address(this), 100000);
-        currency.approve(address(lsp), 10000);
-        currency.approve(address(pool), 10000);
     }
 
-    function testDeposit() public {
-        assertEq(pool.previewDeposit(1000), 1000);
-
-        lsp.mint(address(this), 0, 1000);
-        lsp.activeFuture().longToken.approve(address(pool), 1000);
-        pool.deposit(1000);
-
-        assertEq(pool.previewDeposit(1000), 1000);
+    function mintAproveLong(address account, uint256 amount, uint32 period) public {
+        currency.mint(account, amount);
+        currency.approve(address(lsp), amount);
+        lsp.mint(account, period, amount);
+        lsp.activeFuture().longToken.approve(address(pool), amount);
     }
 
-    function testTooMuchInPool() public {
-        lsp.mint(address(this), 0, 1000);
-        lsp.activeFuture().longToken.approve(address(pool), 1000);
-        pool.deposit(1000);
-
-        lsp.mint(address(this), 0, 200);
-        lsp.activeFuture().longToken.transfer(address(pool), 200);
-        assertEq(pool.share().balanceOf(address(this)), 1000);
-
-        lsp.mint(address(this), 0, 1000);
-        lsp.activeFuture().longToken.approve(address(pool), 1000);
-        pool.deposit(1000);
-        assertEq(lsp.activeFuture().longToken.balanceOf(address(this)), 0);
-        // pool.withdraw(1000);
-        // assertEq(pool.poolToken().balanceOf(address(this)), 0);
-        // assertEq(lsp.activeFuture().longToken.balanceOf(address(this)), 1200);
-    }
-}
-
-contract RollingPoolRolloverTest is Test {
-    FutureMock public currency;
-    MultiLongShortPair public lsp;
-    RollingPool public pool;
-
-    function setUp() public {
-        currency = new FutureMock("asd", "asd");
-        lsp = new MultiLongShortPair(currency);
-        pool = new RollingPool(lsp);
-
-        currency.mint(address(this), 1000000);
-        currency.approve(address(lsp), 100000);
-        currency.approve(address(pool), 100000);
-
-        lsp.mint(address(this), 0, 10000);
-        lsp.activeFuture().longToken.approve(address(pool), 10000);
-        pool.deposit(10000);
+    function startRoll(uint256 amount) public {
+        vm.startPrank(address(1));
+        mintAproveLong(address(1), amount, 0);
+        pool.deposit(amount);
+        vm.stopPrank();
         lsp.cheatForceNewPeriod();
         pool.startRollover();
     }
 
-    function testRolloverDeposit() public {
-        lsp.mint(address(this), 1, 10000);
+    function finishRoll(uint256 blockDuration) public {
+        vm.roll(blockDuration);
+        vm.startPrank(address(1));
+        mintAproveLong(address(1), 10000, 1);
         lsp.activeFuture().longToken.approve(address(pool), 10000);  
+        pool.rollWithdraw(10000);
+        vm.stopPrank();
+        assertEq(pool.rolling(), false);
+    }
+
+    function testDeposit() public {
+        assertEq(pool.previewDeposit(1000), 1000);
+        mintAproveLong(address(this), 1000, 0);
+        pool.deposit(500);
+
+        assertEq(pool.getFutureBalance(address(this)), 500);
+    }
+
+    function testTooMuchInPool() public {
+        mintAproveLong(address(this), 2000, 0);
+        pool.deposit(1000);
+        lsp.activeFuture().longToken.transfer(address(pool), 200);
+        assertEq(pool.share().balanceOf(address(this)), 1000);
+
+        pool.redeem(1000);
+        assertEq(lsp.activeFuture().longToken.balanceOf(address(this)), 1999);
+    }
+
+    function testRolloverDeposit() public {
+        startRoll(10000);
 
         vm.roll(10000);
-        pool.rollDeposit(1000);    
+        mintAproveLong(address(this), 10000, 1);
+        pool.rollDeposit(1000); 
         assertEq(lsp.getFutureToken(0, true).balanceOf(address(this)), 1100);
         assertEq(lsp.getFutureToken(1, true).balanceOf(address(this)), 9000);
     }
 
     function testRolloverWithdraw() public {
-        lsp.mint(address(this), 1, 10000);
-        lsp.activeFuture().longToken.approve(address(pool), 10000);  
+        startRoll(10000);
 
         vm.roll(10000);
+        mintAproveLong(address(this), 10000, 1);
         pool.rollWithdraw(1100);
         assertEq(lsp.getFutureToken(0, true).balanceOf(address(this)), 1100);
         assertEq(lsp.getFutureToken(1, true).balanceOf(address(this)), 9000);
     }
 
+    function testRolloverEnd() public {
+        startRoll(10000);  
+        vm.roll(10000);
+
+        mintAproveLong(address(this), 10000, 1);
+        pool.rollWithdraw(9999);  
+        assertEq(pool.rolling(), true);
+        pool.rollWithdraw(1);  
+        assertEq(pool.rolling(), false);
+    }
+
+    function testRollingFundChange() public {
+        mintAproveLong(address(this), 10000, 0);
+        pool.deposit(10000);
+
+        startRoll(0);
+        finishRoll(10000);
+
+        pool.redeem(pool.share().balanceOf(address(this)));
+        assertEq(lsp.getFutureToken(1, true).balanceOf(address(this)), 9090);
+        // pool.redeem(1000);
+        // assertEq()
+        // assertEq(pool.)
+    }
 }
+

@@ -29,18 +29,18 @@ contract RollingPool {
     IERC20 public oldFuture;
     IERC20 public newFuture;
 
-    bool _rolling;
-    uint256 _rollingStartBlock;
+    bool public rolling;
+    uint256 public rollingStartBlock;
 
     constructor(MultiLongShortPair _lsp) {
         share = new ShareToken("Pool Shares", "POOL");
         lsp = _lsp;
         newFuture = lsp.activeFuture().longToken;
-        _rolling = false;
+        rolling = false;
         // twamm = new TWAMM();
     }
 
-    function getFutureBalance(address account) public view returns (uint256) {
+    function getFutureBalance(address account) external view returns (uint256) {
         return previewRedeem(share.balanceOf(account));
     }
 
@@ -48,9 +48,9 @@ contract RollingPool {
         return _convertToFutures(futures, Math.Rounding.Down);
     }
 
-    // pretend that _rolling didn't happen if its during _rolling?
+    // pretend that rolling didn't happen if its during rolling?
     function deposit(uint256 futures) external {
-        require(_rolling == false, "Cant deposit during _rolling");
+        require(rolling == false, "Cant deposit during rolling");
         uint256 shares = previewDeposit(futures);
         newFuture.transferFrom(msg.sender, address(this), futures);
         share.mint(msg.sender, shares);
@@ -61,7 +61,7 @@ contract RollingPool {
     }
 
     function redeem(uint256 shares) external {
-        require(_rolling == false, "Cant redeem during rolling");
+        require(rolling == false, "Cant redeem during rolling");
         uint256 futures = previewRedeem(shares);
         share.burn(msg.sender, shares);
         newFuture.transfer(msg.sender, futures);
@@ -72,37 +72,44 @@ contract RollingPool {
         require(future != newFuture, "no new period");
         oldFuture = newFuture;
         newFuture = future;
-        _rollingStartBlock = block.number;
-        _rolling = true;
+        rollingStartBlock = block.number;
+        rolling = true;
         // start trade
     }
 
     function rollDeposit(uint256 newFutures) external {
-        require(_rolling == true, "not rolling");
-        uint256 feeDuration = block.number - _rollingStartBlock + 1;
+        require(rolling == true, "not rolling");
+        uint256 feeDuration = block.number - rollingStartBlock + 1;
         uint256 feeTokens = newFutures.mulDiv(100000 + feeDuration, 100000, Math.Rounding.Down);
         newFuture.transferFrom(msg.sender, address(this), newFutures);
         oldFuture.transfer(msg.sender, feeTokens);
+        _tryEndRollover();
     }
 
     function rollWithdraw(uint256 oldFutures) external {
-        require(_rolling == true, "not rolling");
-        uint256 feeDuration = block.number - _rollingStartBlock;
+        require(rolling == true, "not rolling");
+        uint256 feeDuration = block.number - rollingStartBlock;
         uint256 feeTokens = oldFutures.mulDiv(100000, feeDuration + 100000, Math.Rounding.Down);
         newFuture.transferFrom(msg.sender, address(this), feeTokens);
         oldFuture.transfer(msg.sender, oldFutures);
+        _tryEndRollover();
     }
 
+    function _tryEndRollover() internal {
+        if (oldFuture.balanceOf(address(this)) == 0) {
+            rolling = false;
+        }
+    }
 
-    function totalAssets() internal view virtual returns (uint256) {
+    function _totalAssets() internal view virtual returns (uint256) {
         return newFuture.balanceOf(address(this));
     }
 
     function _convertToShares(uint256 futures, Math.Rounding rounding) internal view virtual returns (uint256) {
-        return futures.mulDiv(share.totalSupply(), totalAssets() + 1, rounding);
+        return futures.mulDiv(share.totalSupply(), _totalAssets() + 1, rounding);
     }
 
     function _convertToFutures(uint256 shares, Math.Rounding rounding) internal view virtual returns (uint256) {
-        return shares.mulDiv(totalAssets() + 1, share.totalSupply() + 1, rounding);
+        return shares.mulDiv(_totalAssets() + 1, share.totalSupply() + 1, rounding);
     }
 }
