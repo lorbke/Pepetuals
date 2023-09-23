@@ -9,7 +9,7 @@ import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mec
 import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/common/TokenFactory.sol";
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
-import {UniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
+import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -41,7 +41,7 @@ contract MultiLongShortPair is PoolInitializer {
 
 	struct FuturePeriod {
 		LongShortPair lsp;
-		UniswapV3Pool pool;
+		IUniswapV3Pool pool;
 		uint256 startTimestamp;
 	}
 
@@ -55,7 +55,7 @@ contract MultiLongShortPair is PoolInitializer {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, address _collateral) {
+	constructor(bytes32 _name, address _collateral) PoolInitializer() {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
@@ -99,9 +99,10 @@ contract MultiLongShortPair is PoolInitializer {
 	function _newFuturePeriod() internal {
 		newestFutureId++;
 		setLspParams();
+        LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
 		futures[newestFutureId] = FuturePeriod({
 			lsp: LongShortPair(lspCreator.createLongShortPair(lspParams)),
-			pool: UniswapV3Pool(createAndInitializePoolIfNecessary(lsp.longToken(), lsp.shortToken(), 3000, 0))
+			pool: IUniswapV3Pool(this.createAndInitializePoolIfNecessary(address(lsp.longToken()), address(lsp.shortToken()), 3000, 0)),
 			startTimestamp: block.timestamp
 		});
 	}
