@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {LongShortPairCreator} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPairCreator.sol";
+import {LongShortPair} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPair.sol";
 import {LongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LongShortPairFinancialProductLibrary.sol";
 import {LinearLongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LinearLongShortPairFinancialProductLibrary.sol";
 import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mechanism/interfaces/FinderInterface.sol";
@@ -36,7 +37,7 @@ contract MultiLongShortPair {
 	uint256 constant PERIOD_LENGTH = 120 days;
 
 	struct FuturePeriod {
-		address lsp;
+		LongShortPair lsp;
 		uint256 startTimestamp;
 	}
 
@@ -50,7 +51,7 @@ contract MultiLongShortPair {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, IERC20 _collateral) {
+	constructor(bytes32 _name, IERC20Standard _collateral) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
@@ -95,7 +96,7 @@ contract MultiLongShortPair {
 		newestFutureId++;
 		setLspParams();
 		futures[newestFutureId] = FuturePeriod({
-			lsp: lspCreator.createLongShortPair(lspParams),
+			lsp: LongShortPair(lspCreator.createLongShortPair(lspParams)),
 			startTimestamp: block.timestamp
 		});
 	}

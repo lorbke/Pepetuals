@@ -35,7 +35,9 @@ contract RollingPool {
     constructor(MultiLongShortPair _lsp) {
         share = new ShareToken("Pool Shares", "POOL");
         lsp = _lsp;
-        newFuture = lsp.activeFuture().longToken;
+        newFuture = lsp.getNewestFuturePeriod().lsp.longToken();
+        // LongShortPair(lsp.getNewestFuturePeriod().lsp);
+        newFuture = lsp;
         rolling = false;
         // twamm = new TWAMM();
     }
