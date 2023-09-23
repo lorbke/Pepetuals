@@ -8,9 +8,6 @@ import {LinearLongShortPairFinancialProductLibrary} from "UMA/packages/core/cont
 import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mechanism/interfaces/FinderInterface.sol";
 import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/common/TokenFactory.sol";
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
-import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
-import {PeripheryImmutableState} from "uniswapv3-periphery/contracts/base/PeripheryImmutableState.sol";
-import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -35,14 +32,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 //     uint256 optimisticOracleProposerBond;
 // }
 
-contract MultiLongShortPair is PoolInitializer {
+contract MultiLongShortPair {
 	using SafeERC20 for IERC20;
 
 	uint256 constant PERIOD_LENGTH = 120 days;
 
 	struct FuturePeriod {
 		LongShortPair lsp;
-		IUniswapV3Pool pool;
 		uint256 startTimestamp;
 	}
 
@@ -56,7 +52,7 @@ contract MultiLongShortPair is PoolInitializer {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, address _collateral, address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
+	constructor(bytes32 _name, address _collateral) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
@@ -100,10 +96,8 @@ contract MultiLongShortPair is PoolInitializer {
 	function _newFuturePeriod() internal {
 		newestFutureId++;
 		setLspParams();
-        LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
 		futures[newestFutureId] = FuturePeriod({
 			lsp: LongShortPair(lspCreator.createLongShortPair(lspParams)),
-			pool: IUniswapV3Pool(this.createAndInitializePoolIfNecessary(address(lsp.longToken()), address(lsp.shortToken()), 3000, 0)),
 			startTimestamp: block.timestamp
 		});
 	}
