@@ -39,7 +39,6 @@ contract Api {
     }
 
     function buy(FutureIdentifier calldata ident, uint256 amount) public {
-
     }
 
     function sell(FutureIdentifier calldata ident, uint256 amount) public {

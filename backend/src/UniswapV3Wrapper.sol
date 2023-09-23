@@ -40,11 +40,13 @@ contract UniswapV3Wrapper is PoolInitializer {
 	using SafeERC20 for IERC20;
 
 	uint24 constant FEE = 3000;
+	int24 internal constant MAX_TICK = 8388607;
 	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
 	constructor(address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
 	}
 
+	// helper function for computing square roots
 	function sqrt(uint y) internal pure returns (uint z) {
 		if (y > 3) {
 			z = y;
@@ -58,6 +60,7 @@ contract UniswapV3Wrapper is PoolInitializer {
 		}
 	}
 
+	// creates a new pool and returns its address
 	function createPool(address token0, address token1) public returns (address pool) {
 		if (token0 > token1) {
 			return this.createAndInitializePoolIfNecessary(token1, token0, FEE, uint160(sqrt(1) * 2 ** 96));
@@ -66,10 +69,28 @@ contract UniswapV3Wrapper is PoolInitializer {
 
 	}
 
+	// creates the following liquidity pools and returns their addresses:
+	// - lpPool: long/short
+	// - collateralPoolLong: long/collateral
+	// - collateralPoolShort: short/collateral
+	function createLpAndCollateralPools(address long, address short, address collateral) public returns (address lpPool, address collateralPoolLong, address collateralPoolShort) {
+		lpPool = createPool(long, short);
+		collateralPoolLong = createPool(long, collateral);
+		collateralPoolShort = createPool(short, collateral);
+	}
+
+	// sells the specified token for the other token in the specified pool
 	// positive amount = exact input, negative amount = exact output
-	function sellToken(address pool, bool longForShort, int256 amount) public {
+	function sellToken(address pool, bool zeroForOne, int256 amount) public {
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
-		uniswapPool.swap(msg.sender, longForShort, amount, 0, bytes(""));
+		uniswapPool.swap(msg.sender, zeroForOne, amount, 0, bytes(""));
+	}
+
+	// adds liquidity to the specified pool
+	function provideLiquidity(address pool, uint128 amount) public {
+		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
+
+		uniswapPool.mint(msg.sender, 0, MAX_TICK, amount, bytes(""));
 	}
 }

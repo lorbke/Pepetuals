@@ -43,7 +43,9 @@ contract MultiLongShortPair is Test {
 
 	struct FuturePeriod {
 		LongShortPair lsp;
-		address pool;
+		address poolLongShort;
+		address poolLongCollat;
+		address poolShortCollat;
 		uint256 startTimestamp;
 	}
 
@@ -60,9 +62,9 @@ contract MultiLongShortPair is Test {
 
 	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper, address _finder) {
 		name = _name;
+
 		uniswapV3Wrapper = UniswapV3Wrapper(_uniswapV3Wrapper);
 		require(address(uniswapV3Wrapper) != address(0), "Invalid uniswap wrapper");
-
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
 		require(address(settlementType) != address(0), "Invalid settlement type");
 		finder = FinderInterface(_finder);
@@ -71,10 +73,11 @@ contract MultiLongShortPair is Test {
 		require(address(tokenFactory) != address(0), "Invalid token factory");
 		lspCreator = new LongShortPairCreator(finder, tokenFactory, address(0));
 		require(address(lspCreator) != address(0), "Invalid lsp creator");
+
 		lspParams = LongShortPairCreator.CreatorParams({
 			pairName: "",
 			expirationTimestamp: 0,
-			collateralPerPair: 0,
+			collateralPerPair: 1,
 			priceIdentifier: bytes32("TOKEN_PRICE"),
 			enableEarlyExpiration: true,
 			longSynthName: "",
@@ -124,12 +127,19 @@ contract MultiLongShortPair is Test {
 
 		LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
 		require(address(lsp) != address(0), "Failed to create lsp");
-		address pool = uniswapV3Wrapper.createPool(address(lsp.longToken()), address(lsp.shortToken()));
-		require(pool != address(0), "Failed to create pool");
+
+		(address poolLongShort, address poolLongCollat, address poolShortCollat) =
+		uniswapV3Wrapper.createLpAndCollateralPools(address(lsp.longToken()), address(lsp.shortToken()),
+		address(lspParams.collateralToken));
+		require(poolLongShort != address(0), "Failed to create long-short pool");
+		require(poolLongCollat != address(0), "Failed to create long-collateral pool");
+		require(poolShortCollat != address(0), "Failed to create short-collateral pool");
 
 		futures[newestFutureId] = FuturePeriod({
 			lsp: lsp,
-			pool: pool,
+			poolLongShort: poolLongShort,
+			poolLongCollat: poolLongCollat,
+			poolShortCollat: poolShortCollat,
 			startTimestamp: block.timestamp
 		});
 	}
@@ -148,8 +158,16 @@ contract MultiLongShortPair is Test {
 		return futures[periodId].lsp;
 	}
 
-	function getPool(uint32 periodId) public view returns (address) {
-		return futures[periodId].pool;
+	function getPoolLongShort(uint32 periodId) public view returns (address) {
+		return futures[periodId].poolLongShort;
+	}
+
+	function getPoolLongCollat(uint32 periodId) public view returns (address) {
+		return futures[periodId].poolLongCollat;
+	}
+
+	function getPoolShortCollat(uint32 periodId) public view returns (address) {
+		return futures[periodId].poolShortCollat;
 	}
 
 	function getNewestLsp() public view returns (LongShortPair lsp) {
