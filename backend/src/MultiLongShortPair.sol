@@ -109,6 +109,10 @@ contract MultiLongShortPair {
 		_newFuturePeriod();
 	}
 
+	function cheatNewFuturePeriod() public {
+		_newFuturePeriod();
+	}
+
 	function getLsp(uint32 periodId) public view returns (LongShortPair lsp) {
 		return futures[periodId].lsp;
 	}
