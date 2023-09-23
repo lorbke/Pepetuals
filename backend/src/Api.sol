@@ -25,13 +25,13 @@ contract Api {
     mapping(bytes32=>mapping(uint8=>RollingPool)) rollingPools;
     bytes32[] public stockNames;
     IERC20 collateral;
-    address uniswapV3Factory;
-    address WETH9;
+    address uniswapV3Wrapper;
+    address finder;
 
-    constructor(IERC20 _collateral, address _uniswapV3Factory, address _WETH9) {
+    constructor(IERC20 _collateral, address _uniswapV3Wrapper, address _finder) {
         collateral = _collateral;
-        uniswapV3Factory = _uniswapV3Factory;
-        WETH9 = _WETH9;
+        uniswapV3Wrapper = _uniswapV3Wrapper;
+        finder = _finder;
     }
 
     function getStockNames() public view returns (bytes32[] memory) {
@@ -40,7 +40,7 @@ contract Api {
 
     function registerStock(bytes32 name) public {
         stockNames.push(name);
-        MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), address(0));
+        MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), uniswapV3Wrapper, finder);
         multiLongShortPairs[name][1] = lsp;
         rollingPools[name][1] = new RollingPool(lsp);
     }

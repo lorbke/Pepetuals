@@ -55,11 +55,7 @@ contract MultiLongShortPair {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-<<<<<<< HEAD
-	constructor(bytes32 _name, address _collateral, address _finder) {
-=======
-	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper) {
->>>>>>> e62d6aa93249892760391fc045abacbfa8a145a7
+	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper, address _finder) {
 		name = _name;
 		uniswapV3Wrapper = UniswapV3Wrapper(_uniswapV3Wrapper);
 
@@ -86,10 +82,7 @@ contract MultiLongShortPair {
 		});
 
 		_newFuturePeriod();
-<<<<<<< HEAD
-=======
 		newestFutureId--;
->>>>>>> e62d6aa93249892760391fc045abacbfa8a145a7
 	}
 
 	function setLspParams() internal {
