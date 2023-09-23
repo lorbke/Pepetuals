@@ -10,11 +10,12 @@ import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/comm
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
 import {PeripheryImmutableState} from "uniswapv3-periphery/contracts/base/PeripheryImmutableState.sol";
-import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+
+import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 
 // @todo remove
 // struct CreatorParams {
@@ -46,5 +47,12 @@ contract UniswapV3Wrapper is PoolInitializer {
 
 	function createPool(address token0, address token1) public returns (address pool) {
 		return this.createAndInitializePoolIfNecessary(token0, token1, FEE, SQRT_PRICE);
+	}
+
+	// positive amount = exact input, negative amount = exact output
+	function sellToken(address pool, bool longForShort, int256 amount) public {
+		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
+
+		uniswapPool.swap(msg.sender, longForShort, amount, 0, bytes(""));
 	}
 }
