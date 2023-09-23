@@ -40,7 +40,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 	using SafeERC20 for IERC20;
 
 	uint24 constant FEE = 3000;
-	int24 internal constant MAX_TICK = 8388607;
+	int24 internal constant MAX_TICK = 887272;
+	int24 internal constant MIN_TICK = -887272;
 	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
 	constructor(address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
@@ -98,6 +99,6 @@ contract UniswapV3Wrapper is PoolInitializer {
 		require (amount > 0, "Amount must be greater than 0");
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
-		uniswapPool.mint(msg.sender, 0, MAX_TICK, amount, bytes(""));
+		uniswapPool.mint(msg.sender, MIN_TICK, MAX_TICK, amount, bytes(""));
 	}
 }
