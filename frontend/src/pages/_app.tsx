@@ -1,4 +1,4 @@
-import '@/styles/theme.css';
+// import '@/styles/theme.css';
 import '@/styles/globals.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '@near-wallet-selector/modal-ui/styles.css';

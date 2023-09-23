@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { MainHeader } from '../MainHeader';
 import { MainNavbar } from '@/components/Navbar';
 
 interface Props {
