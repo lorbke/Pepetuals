@@ -148,7 +148,7 @@ contract MultiLongShortPair is Test {
 		return futures[periodId].lsp;
 	}
 
-	function getPool(uint32 periodId) public returns (address) {
+	function getPool(uint32 periodId) public view returns (address) {
 		return futures[periodId].pool;
 	}
 
