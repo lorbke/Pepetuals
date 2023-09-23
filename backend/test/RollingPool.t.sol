@@ -24,7 +24,7 @@ contract RollingPoolTest is Test {
 
     function setUp() public {
         collateral = new FutureMock("asd", "asd");
-        mlsp = new MultiLongShortPair("asd", address(collateral));
+        mlsp = new MultiLongShortPair("asd", address(collateral), address(1), address(1));
         pool = new RollingPool(mlsp);
     }
 
