@@ -13,23 +13,24 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-    // struct CreatorParams {
-    //     string pairName;
-    //     uint64 expirationTimestamp;
-    //     uint256 collateralPerPair;
-    //     bytes32 priceIdentifier;
-    //     bool enableEarlyExpiration;
-    //     string longSynthName;
-    //     string longSynthSymbol;
-    //     string shortSynthName;
-    //     string shortSynthSymbol;
-    //     IERC20Standard collateralToken;
-    //     LongShortPairFinancialProductLibrary financialProductLibrary;
-    //     bytes customAncillaryData;
-    //     uint256 proposerReward;
-    //     uint256 optimisticOracleLivenessTime;
-    //     uint256 optimisticOracleProposerBond;
-    // }
+// @todo remove
+// struct CreatorParams {
+//     string pairName;
+//     uint64 expirationTimestamp;
+//     uint256 collateralPerPair;
+//     bytes32 priceIdentifier;
+//     bool enableEarlyExpiration;
+//     string longSynthName;
+//     string longSynthSymbol;
+//     string shortSynthName;
+//     string shortSynthSymbol;
+//     IERC20Standard collateralToken;
+//     LongShortPairFinancialProductLibrary financialProductLibrary;
+//     bytes customAncillaryData;
+//     uint256 proposerReward;
+//     uint256 optimisticOracleLivenessTime;
+//     uint256 optimisticOracleProposerBond;
+// }
 
 contract MultiLongShortPair {
 	using SafeERC20 for IERC20;
@@ -98,6 +99,7 @@ contract MultiLongShortPair {
 		setLspParams();
 		futures[newestFutureId] = FuturePeriod({
 			lsp: LongShortPair(lspCreator.createLongShortPair(lspParams)),
+
 			startTimestamp: block.timestamp
 		});
 	}
