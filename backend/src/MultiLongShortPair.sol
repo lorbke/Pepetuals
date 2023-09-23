@@ -55,7 +55,7 @@ contract MultiLongShortPair is PoolInitializer {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, address _collateral) PoolInitializer() {
+	constructor(bytes32 _name, address _collateral) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
