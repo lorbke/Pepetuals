@@ -63,3 +63,46 @@ contract RollingPoolTest is Test {
         // assertEq(lsp.activeFuture().longToken.balanceOf(address(this)), 1200);
     }
 }
+
+contract RollingPoolRolloverTest is Test {
+    FutureMock public currency;
+    MultiLongShortPair public lsp;
+    RollingPool public pool;
+
+    function setUp() public {
+        currency = new FutureMock("asd", "asd");
+        lsp = new MultiLongShortPair(currency);
+        pool = new RollingPool(lsp);
+
+        currency.mint(address(this), 1000000);
+        currency.approve(address(lsp), 100000);
+        currency.approve(address(pool), 100000);
+
+        lsp.mint(address(this), 0, 10000);
+        lsp.activeFuture().longToken.approve(address(pool), 10000);
+        pool.deposit(10000);
+        lsp.cheatForceNewPeriod();
+        pool.startRollover();
+    }
+
+    function testRolloverDeposit() public {
+        lsp.mint(address(this), 1, 10000);
+        lsp.activeFuture().longToken.approve(address(pool), 10000);  
+
+        vm.roll(10000);
+        pool.rollDeposit(1000);    
+        assertEq(lsp.getFutureToken(0, true).balanceOf(address(this)), 1100);
+        assertEq(lsp.getFutureToken(1, true).balanceOf(address(this)), 9000);
+    }
+
+    function testRolloverWithdraw() public {
+        lsp.mint(address(this), 1, 10000);
+        lsp.activeFuture().longToken.approve(address(pool), 10000);  
+
+        vm.roll(10000);
+        pool.rollWithdraw(1100);
+        assertEq(lsp.getFutureToken(0, true).balanceOf(address(this)), 1100);
+        assertEq(lsp.getFutureToken(1, true).balanceOf(address(this)), 9000);
+    }
+
+}
