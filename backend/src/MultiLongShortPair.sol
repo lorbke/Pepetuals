@@ -1,100 +1,117 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {LongShortPairCreator} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPairCreator.sol";
+import {LongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LongShortPairFinancialProductLibrary.sol";
+import {LinearLongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LinearLongShortPairFinancialProductLibrary.sol";
+import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mechanism/interfaces/FinderInterface.sol";
+import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/common/TokenFactory.sol";
+import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PairToken is ERC20, Ownable {
-    constructor(
-        string memory name,
-        string memory symbol
-    ) ERC20(name, symbol) Ownable() {}
-
-    function mint(address account, uint256 amount) public onlyOwner {
-        _mint(account, amount);
-    }
-
-    function burn(address account, uint256 amount) public onlyOwner {
-        _burn(account, amount);
-    }
-}
-
-contract MultiLongShortPair {
-    using SafeERC20 for IERC20;
-
-    struct FuturePeriod {
-        PairToken shortToken;
-        PairToken longToken;
-        bool finished;
-        uint32 priceChange; // 0 = 0; 2 = type(uint32).max
-    }
-
-    mapping(uint32 => FuturePeriod) public futures;
-    uint32 public newestFutureId;
-    IERC20 currency;
-
-    constructor(IERC20 _currency) {
-        currency = _currency;
-        newestFutureId = 0;
-        newFuturePeriod(true);
-    }
-
-    function newFuturePeriod(bool firstPeriod) internal {
-        if (!firstPeriod) {
-            newestFutureId += 1;
-        }
-        futures[newestFutureId] = FuturePeriod(
-            new PairToken("short Token", "SHORT"),
-            new PairToken("long Token", "LONG"),
-            false,
-            0
-        );
-    }
-
-    // function getBalance(address account, uint32 period, bool long) public view returns (uint256){
-    //     return futures[period].longToken.balanceOf(account);
+    // struct CreatorParams {
+    //     string pairName;
+    //     uint64 expirationTimestamp;
+    //     uint256 collateralPerPair;
+    //     bytes32 priceIdentifier;
+    //     bool enableEarlyExpiration;
+    //     string longSynthName;
+    //     string longSynthSymbol;
+    //     string shortSynthName;
+    //     string shortSynthSymbol;
+    //     IERC20Standard collateralToken;
+    //     LongShortPairFinancialProductLibrary financialProductLibrary;
+    //     bytes customAncillaryData;
+    //     uint256 proposerReward;
+    //     uint256 optimisticOracleLivenessTime;
+    //     uint256 optimisticOracleProposerBond;
     // }
 
-    function activeFuture() public view returns (FuturePeriod memory) {
-        return futures[newestFutureId];
-    }
+contract MultiLongShortPair {
+	using SafeERC20 for IERC20;
 
-    function getFutureToken(uint32 period, bool long) public view returns (IERC20) {
-        return long ? futures[period].longToken : futures[period].shortToken;
-    }
+	uint256 constant PERIOD_LENGTH = 120 days;
 
-    function mint(address reciever, uint32 period, uint256 amount) public {
-        if (period > newestFutureId) {
-            period = newestFutureId;
-        }
-        currency.transferFrom(reciever, address(this), amount);
-        futures[period].shortToken.mint(reciever, amount);
-        futures[period].longToken.mint(reciever, amount);
-    }
+	struct FuturePeriod {
+		address lsp;
+		uint256 startTimestamp;
+	}
 
-    function burn(address reciever, uint256 amount) public {
-        activeFuture().shortToken.burn(reciever, amount);
-        activeFuture().longToken.burn(reciever, amount);
-    }
+	bytes32 public name;
+	mapping(uint32 => FuturePeriod) public futures;
+	uint32 public newestFutureId = 0;
+	IERC20 collateral;
 
-    function redeem(address reciever, uint32 period, bool long, uint256 amount) public returns(uint256){
-        FuturePeriod memory future = futures[period];
-        require(future.finished, "Future hasn't finished");
-        PairToken futureToken = long ? PairToken(future.longToken) : PairToken(future.shortToken);
-        futureToken.burn(reciever, amount);
-        // redeem logic
-        return 100;
-    }
+	LinearLongShortPairFinancialProductLibrary settlementType;
+	FinderInterface finder;
+	TokenFactory tokenFactory;
+	LongShortPairCreator lspCreator;
+	LongShortPairCreator.CreatorParams lspParams;
 
-    function cheatForceNewPeriod() public {
-        newFuturePeriod(false);
-    }
+	constructor(bytes32 _name, IERC20 _collateral) {
+		name = _name;
 
-    function cheatFinishPeriod(uint32 period, uint32 priceChange) public {
-        futures[period].finished = true;
-        futures[period].priceChange = priceChange;
-        // newFuturePeriod(false);
-    }
+		settlementType = new LinearLongShortPairFinancialProductLibrary();
+		finder = FinderInterface(0xE60dBa66B85E10E7Fd18a67a6859E241A243950e);
+		tokenFactory = new TokenFactory();
+		lspCreator = new LongShortPairCreator(finder, tokenFactory, address(0));
+		collateral = _collateral;
+		lspParams = LongShortPairCreator.CreatorParams({
+			pairName: "",
+			expirationTimestamp: 0,
+			collateralPerPair: 0,
+			priceIdentifier: bytes32("TOKEN_PRICE"),
+			enableEarlyExpiration: true,
+			longSynthName: "",
+			longSynthSymbol: "",
+			shortSynthName: "",
+			shortSynthSymbol: "",
+			collateralToken: collateral,
+			financialProductLibrary: settlementContract,
+			customAncillaryData: bytes(""),
+			proposerReward: 100000,
+			optimisticOracleLivenessTime: 100000,
+			optimisticOracleProposerBond: 100000
+		});
+
+		newFuturePeriod();
+		newestFutureId--;
+	}
+
+	function setLspParams() internal {
+		lspParams.pairName = string(abi.encodePacked(name, newestFutureId));
+		lspParams.expirationTimestamp = uint64(block.timestamp + PERIOD_LENGTH);
+		lspParams.collateralPerPair = 100;
+		lspParams.longSynthName = string(abi.encodePacked(name, "LONG", newestFutureId));
+		lspParams.longSynthSymbol = string(abi.encodePacked(name, "LONG", newestFutureId));
+		lspParams.shortSynthName = string(abi.encodePacked(name, "SHORT", newestFutureId));
+		lspParams.shortSynthSymbol = string(abi.encodePacked(name, "SHORT", newestFutureId));
+		// @todo edit for proper UMA resolvement
+		lspParams.customAncillaryData = abi.encodePacked(newestFutureId);
+	}
+
+	function _newFuturePeriod() internal {
+		newestFutureId++;
+		setLspParams();
+		futures[newestFutureId] = FuturePeriod({
+			lsp: lspCreator.createLongShortPair(lspParams),
+			startTimestamp: block.timestamp
+		});
+	}
+
+	function newFuturePeriod() public {
+		require(block.timestamp > futures[newestFutureId].startTimestamp + PERIOD_LENGTH - 30 days, "Too early to create new period");
+		_newFuturePeriod();
+	}
+
+	function getFuturePeriod(uint32 futureId) public view returns (FuturePeriod memory future) {
+		return futures[futureId];
+	}
+
+	function getNewestFuturePeriod() public view returns (FuturePeriod memory future) {
+		return futures[newestFutureId];
+	}
 }
