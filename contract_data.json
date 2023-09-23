@@ -1,12 +1,7 @@
 {
-    "1": {
-        "name": "Ethereum",
-        "rpcUrl": "https://mainnet.infura.io/v3/1d7f1f0c6d5a4b6e8b0b3b0b2c1b2c1b",
-        "contractAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-    },
     "5": {
         "name": "goerli",
         "rpcUrl": "https://ethereum-goerli.publicnode.com",
         "contractAddress": "0x462a289860722D97873B60501D09291B70ebC16d"
     }
-}; 
+}
