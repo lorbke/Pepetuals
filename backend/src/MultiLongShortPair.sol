@@ -8,6 +8,7 @@ import {LinearLongShortPairFinancialProductLibrary} from "UMA/packages/core/cont
 import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mechanism/interfaces/FinderInterface.sol";
 import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/common/TokenFactory.sol";
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
+import {UniswapV3Wrapper} from "./UniswapV3Wrapper.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -39,6 +40,7 @@ contract MultiLongShortPair {
 
 	struct FuturePeriod {
 		LongShortPair lsp;
+		address pool;
 		uint256 startTimestamp;
 	}
 
@@ -46,14 +48,16 @@ contract MultiLongShortPair {
 	mapping(uint32 => FuturePeriod) public futures;
 	uint32 public newestFutureId = 0;
 
+	UniswapV3Wrapper uniswapV3Wrapper;
 	LinearLongShortPairFinancialProductLibrary settlementType;
 	FinderInterface finder;
 	TokenFactory tokenFactory;
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, address _collateral) {
+	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper) {
 		name = _name;
+		uniswapV3Wrapper = UniswapV3Wrapper(_uniswapV3Wrapper);
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
 		finder = FinderInterface(0xE60dBa66B85E10E7Fd18a67a6859E241A243950e);
@@ -77,7 +81,7 @@ contract MultiLongShortPair {
 			optimisticOracleProposerBond: 100000
 		});
 
-		newFuturePeriod();
+		_newFuturePeriod();
 		newestFutureId--;
 	}
 
@@ -96,8 +100,11 @@ contract MultiLongShortPair {
 	function _newFuturePeriod() internal {
 		newestFutureId++;
 		setLspParams();
+        LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
+		address pool = uniswapV3Wrapper.createPool(address(lsp.longToken()), address(lsp.shortToken()));
 		futures[newestFutureId] = FuturePeriod({
-			lsp: LongShortPair(lspCreator.createLongShortPair(lspParams)),
+			lsp: lsp,
+			pool: pool,
 			startTimestamp: block.timestamp
 		});
 	}
