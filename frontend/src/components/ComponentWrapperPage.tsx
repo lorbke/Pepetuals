@@ -16,7 +16,7 @@ export function ComponentWrapperPage(props: Props) {
     <>
       {props.meta && <MetaTags {...props.meta} />}
 
-      <div className={"local-bootstrap " + props.className}>
+      <div className={"local-bootstrap" + (props.className != undefined ? ` ${props.className}` : "" )} style={{all: "unset"}}>
         <VmComponent src={props.src} props={props.componentProps} />
       </div>
     </>

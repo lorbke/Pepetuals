@@ -24,7 +24,7 @@ export const MainNavbar = () => {
 	];
 
 	return (
-		<Navbar isMenuOpen={isMenuOpen} onMenuOpenChange={(open) => setIsMenuOpen(open)}>
+		<Navbar className="z-10" isMenuOpen={isMenuOpen} onMenuOpenChange={(open) => setIsMenuOpen(open)}>
 			<NavbarContent>
 				<NavbarMenuToggle
 					aria-label={isMenuOpen ? "Close menu" : "Open menu"}
