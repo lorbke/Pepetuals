@@ -4,3 +4,6 @@
 [submodule "backend/lib/protocol"]
 	path = backend/lib/protocol
 	url = https://github.com/UMAprotocol/protocol
+[submodule "backend/lib/openzeppelin-contracts"]
+	path = backend/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
