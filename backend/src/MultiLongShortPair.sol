@@ -70,7 +70,7 @@ contract MultiLongShortPair {
 			shortSynthName: "",
 			shortSynthSymbol: "",
 			collateralToken: collateral,
-			financialProductLibrary: settlementContract,
+			financialProductLibrary: settlementType,
 			customAncillaryData: bytes(""),
 			proposerReward: 100000,
 			optimisticOracleLivenessTime: 100000,
