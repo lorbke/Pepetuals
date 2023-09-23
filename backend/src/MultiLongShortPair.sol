@@ -92,7 +92,8 @@ contract MultiLongShortPair is Test {
 		_newFuturePeriod();
 	}
 
-	function printLspParams() public view {
+	function printLspParams() public view 
+	{
 		console.log(lspParams.pairName);
 		console.log(lspParams.expirationTimestamp);
 		console.log(lspParams.collateralPerPair);
@@ -143,6 +144,7 @@ contract MultiLongShortPair is Test {
 	}
 
 	function getLsp(uint32 periodId) public view returns (LongShortPair lsp) {
+		require (periodId <= newestFutureId, "Invalid period id");
 		return futures[periodId].lsp;
 	}
 
