@@ -9,6 +9,7 @@ import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mec
 import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/common/TokenFactory.sol";
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
+import {PeripheryImmutableState} from "uniswapv3-periphery/contracts/base/PeripheryImmutableState.sol";
 import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -55,7 +56,7 @@ contract MultiLongShortPair is PoolInitializer {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, address _collateral) PoolInitializer() {
+	constructor(bytes32 _name, address _collateral, address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
