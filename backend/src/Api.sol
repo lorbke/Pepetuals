@@ -48,8 +48,8 @@ contract Api {
     function buy(FutureIdentifier calldata ident, uint256 amount) public {
         MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
         collateral.transferFrom(msg.sender, address(this), amount);
-        collateral.approve(address(mlsp), amount);
         uint32 period = _isPerpetual(ident) ? mlsp.newestFutureId() : ident.period; 
+        collateral.approve(address(mlsp.getLsp(period)), amount);
         mlsp.getLsp(period).create(amount);
         // trade short to long or reverse
         IERC20 longToken = IERC20(mlsp.getNewestLsp().longToken());
@@ -86,7 +86,7 @@ contract Api {
             token = rp.share();
         } else {
             MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-            // token = mlsp.getFutureToken(ident.period, ident.long);
+            token = mlsp.getLsp(ident.period).longToken();
         }
         return token;
     }
@@ -98,10 +98,9 @@ contract Api {
             token = rp.share();
         } else {
             MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-            // token = mlsp.getFutureToken(ident.period, ident.long);
+            token = mlsp.getLsp(ident.period).longToken();
         }
-        return 0;
-        // return token.balanceOf(account);
+        return token.balanceOf(account);
     }
 
     function _isPerpetual(FutureIdentifier calldata ident) internal pure returns (bool) {

@@ -107,7 +107,7 @@ contract MultiLongShortPair is Test {
 		string memory strId = Strings.toString(newestFutureId);
 		lspParams.pairName = string(abi.encodePacked(name, strId));
 		lspParams.expirationTimestamp = uint64(block.timestamp + PERIOD_LENGTH);
-		lspParams.collateralPerPair = 100;
+		lspParams.collateralPerPair = 1;
 		lspParams.longSynthName = string(abi.encodePacked(name, "LONG", strId));
 		lspParams.longSynthSymbol = string(abi.encodePacked(name, "LONG", strId));
 		lspParams.shortSynthName = string(abi.encodePacked(name, "SHORT", strId));
@@ -144,6 +144,10 @@ contract MultiLongShortPair is Test {
 
 	function getLsp(uint32 periodId) public view returns (LongShortPair lsp) {
 		return futures[periodId].lsp;
+	}
+
+	function getPool(uint32 periodId) public returns (address) {
+		return futures[periodId].pool;
 	}
 
 	function getNewestLsp() public view returns (LongShortPair lsp) {

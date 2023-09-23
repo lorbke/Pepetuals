@@ -43,6 +43,7 @@ contract UniswapV3Wrapper is PoolInitializer {
 	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
 	constructor(address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
+	}
 
 	function sqrt(uint y) internal pure returns (uint z) {
 		if (y > 3) {
