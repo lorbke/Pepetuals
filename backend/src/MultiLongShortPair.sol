@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "forge-std/Test.sol";
+
 import {LongShortPairCreator} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPairCreator.sol";
 import {LongShortPair} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPair.sol";
 import {LongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LongShortPairFinancialProductLibrary.sol";
@@ -13,6 +15,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 // @todo remove
 // struct CreatorParams {
@@ -33,7 +36,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 //     uint256 optimisticOracleProposerBond;
 // }
 
-contract MultiLongShortPair {
+contract MultiLongShortPair is Test {
 	using SafeERC20 for IERC20;
 
 	uint256 constant PERIOD_LENGTH = 120 days;
@@ -89,16 +92,29 @@ contract MultiLongShortPair {
 		_newFuturePeriod();
 	}
 
+	function printLspParams() public view {
+		console.log(lspParams.pairName);
+		console.log(lspParams.expirationTimestamp);
+		console.log(lspParams.collateralPerPair);
+		console.log(string(abi.encodePacked("longSynthName: ", lspParams.longSynthName)));
+		console.log(string(abi.encodePacked("longSynthSymbol: ", lspParams.longSynthSymbol)));
+		console.log(string(abi.encodePacked("shortSynthName: ", lspParams.shortSynthName)));
+		console.log(string(abi.encodePacked("shortSynthSymbol: ", lspParams.shortSynthSymbol)));
+		console.log(string(abi.encodePacked("customAncillaryData: ", lspParams.customAncillaryData)));
+	}
+
 	function setLspParams() internal {
-		lspParams.pairName = string(abi.encodePacked(name, newestFutureId));
+		string memory strId = Strings.toString(newestFutureId);
+		lspParams.pairName = string(abi.encodePacked(name, strId));
 		lspParams.expirationTimestamp = uint64(block.timestamp + PERIOD_LENGTH);
 		lspParams.collateralPerPair = 100;
-		lspParams.longSynthName = string(abi.encodePacked(name, "LONG", newestFutureId));
-		lspParams.longSynthSymbol = string(abi.encodePacked(name, "LONG", newestFutureId));
-		lspParams.shortSynthName = string(abi.encodePacked(name, "SHORT", newestFutureId));
-		lspParams.shortSynthSymbol = string(abi.encodePacked(name, "SHORT", newestFutureId));
+		lspParams.longSynthName = string(abi.encodePacked(name, "LONG", strId));
+		lspParams.longSynthSymbol = string(abi.encodePacked(name, "LONG", strId));
+		lspParams.shortSynthName = string(abi.encodePacked(name, "SHORT", strId));
+		lspParams.shortSynthSymbol = string(abi.encodePacked(name, "SHORT", strId));
 		// @todo edit for proper UMA resolvement
-		lspParams.customAncillaryData = abi.encodePacked(newestFutureId);
+		lspParams.customAncillaryData = abi.encodePacked(strId);
+		// printLspParams();
 	}
 
 	function _newFuturePeriod() internal {
