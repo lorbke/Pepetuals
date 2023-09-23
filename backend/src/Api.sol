@@ -40,7 +40,7 @@ contract Api {
 
     function registerStock(bytes32 name) public {
         stockNames.push(name);
-        MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), uniswapV3Factory, WETH9);
+        MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), address(0));
         multiLongShortPairs[name][1] = lsp;
         rollingPools[name][1] = new RollingPool(lsp);
     }

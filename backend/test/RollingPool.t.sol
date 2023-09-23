@@ -5,6 +5,13 @@ import "forge-std/Test.sol";
 import "../src/RollingPool.sol";
 import "../src/MultiLongShortPair.sol";
 
+interface IUSDC {
+    function balanceOf(address account) external view returns (uint256);
+    function mint(address to, uint256 amount) external;
+    function configureMinter(address minter, uint256 minterAllowedAmount) external;
+    function masterMinter() external view returns (address);
+}
+
 contract FutureMock is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
 
@@ -21,10 +28,20 @@ contract RollingPoolTest is Test {
     FutureMock public collateral;
     MultiLongShortPair public mlsp;
     RollingPool public pool;
+    address FINDER = 0xE60dBa66B85E10E7Fd18a67a6859E241A243950e;
+
+    IUSDC usdc = IUSDC(0x07865c6E87B9F70255377e024ace6630C1Eaa37F);
+    function mint() public {
+        vm.prank(usdc.masterMinter());
+        usdc.configureMinter(address(this), type(uint256).max);
+        usdc.mint(address(this), 1000e6);
+    }
 
     function setUp() public {
-        collateral = new FutureMock("asd", "asd");
-        mlsp = new MultiLongShortPair("asd", address(collateral), address(1), address(1));
+        uint256 gnosis_mainnet_fork = vm.createFork(vm.envString("GOERLI_RPC_URL"));
+		vm.selectFork(gnosis_mainnet_fork);
+
+        mlsp = new MultiLongShortPair("asd", address(usdc), FINDER);
         pool = new RollingPool(mlsp);
     }
 

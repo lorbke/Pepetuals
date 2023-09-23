@@ -52,11 +52,11 @@ contract MultiLongShortPair {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, address _collateral) {
+	constructor(bytes32 _name, address _collateral, address _finder) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
-		finder = FinderInterface(0xE60dBa66B85E10E7Fd18a67a6859E241A243950e);
+		finder = FinderInterface(_finder);
 		tokenFactory = new TokenFactory();
 		lspCreator = new LongShortPairCreator(finder, tokenFactory, address(0));
 		lspParams = LongShortPairCreator.CreatorParams({
@@ -77,8 +77,7 @@ contract MultiLongShortPair {
 			optimisticOracleProposerBond: 100000
 		});
 
-		newFuturePeriod();
-		newestFutureId--;
+		_newFuturePeriod();
 	}
 
 	function setLspParams() internal {
