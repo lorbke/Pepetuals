@@ -51,7 +51,7 @@ contract MultiLongShortPair {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, IERC20Standard _collateral) {
+	constructor(bytes32 _name, address _collateral) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
@@ -68,7 +68,7 @@ contract MultiLongShortPair {
 			longSynthSymbol: "",
 			shortSynthName: "",
 			shortSynthSymbol: "",
-			collateralToken: _collateral,
+			collateralToken: IERC20Standard(_collateral),
 			financialProductLibrary: settlementType,
 			customAncillaryData: bytes(""),
 			proposerReward: 100000,
