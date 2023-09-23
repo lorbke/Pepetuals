@@ -38,6 +38,7 @@ contract MultiLongShortPair {
 
 	struct FuturePeriod {
 		LongShortPair lsp;
+
 		uint256 startTimestamp;
 	}
 
@@ -51,7 +52,7 @@ contract MultiLongShortPair {
 	LongShortPairCreator lspCreator;
 	LongShortPairCreator.CreatorParams lspParams;
 
-	constructor(bytes32 _name, IERC20Standard _collateral) {
+	constructor(bytes32 _name, IERC20Standard _collateral, ) {
 		name = _name;
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
@@ -106,8 +107,8 @@ contract MultiLongShortPair {
 		_newFuturePeriod();
 	}
 
-	function getLsp(uint32 futureId) public view returns (LongShortPair lsp) {
-		return futures[futureId].lsp;
+	function getLsp(uint32 periodId) public view returns (LongShortPair lsp) {
+		return futures[periodId].lsp;
 	}
 
 	function getNewestLsp() public view returns (LongShortPair lsp) {
