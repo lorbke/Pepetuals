@@ -40,13 +40,29 @@ contract UniswapV3Wrapper is PoolInitializer {
 	using SafeERC20 for IERC20;
 
 	uint24 constant FEE = 3000;
-	uint160 constant SQRT_PRICE = 0;
+	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
 	constructor(address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
+
+	function sqrt(uint y) internal pure returns (uint z) {
+		if (y > 3) {
+			z = y;
+			uint x = y / 2 + 1;
+			while (x < z) {
+				z = x;
+				x = (y / x + x) / 2;
+			}
+		} else if (y != 0) {
+			z = 1;
+		}
 	}
 
 	function createPool(address token0, address token1) public returns (address pool) {
-		return this.createAndInitializePoolIfNecessary(token0, token1, FEE, SQRT_PRICE);
+		if (token0 > token1) {
+			return this.createAndInitializePoolIfNecessary(token1, token0, FEE, uint160(sqrt(1) * 2 ** 96));
+		}
+		return this.createAndInitializePoolIfNecessary(token0, token1, FEE, uint160(sqrt(1) * 2 ** 96));
+
 	}
 
 	// positive amount = exact input, negative amount = exact output

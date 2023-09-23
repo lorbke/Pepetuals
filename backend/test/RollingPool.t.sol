@@ -44,11 +44,11 @@ contract RollingPoolTest is Test {
     }
 
     function setUp() public {
-        uint256 fork = vm.createFork(vm.envString("RPC_URL"));
+        uint256 fork = vm.createFork(vm.envString("RPC_URL"), 9746603);
 		vm.selectFork(fork);
 
         wrapper = new UniswapV3Wrapper(factory, WETH9);
-        mlsp = new MultiLongShortPair(bytes32("asd"), address(usdc), address(wrapper), FINDER);
+        mlsp = new MultiLongShortPair(bytes32("ASD"), address(usdc), address(wrapper), FINDER);
         console.logAddress(address(wrapper));
         console.logAddress(address(mlsp));
         console.logAddress(address(pool));
