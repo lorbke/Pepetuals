@@ -74,6 +74,9 @@ contract UniswapV3Wrapper is PoolInitializer {
 	// - collateralPoolLong: long/collateral
 	// - collateralPoolShort: short/collateral
 	function createLpAndCollateralPools(address long, address short, address collateral) public returns (address lpPool, address collateralPoolLong, address collateralPoolShort) {
+		require (long != address(0), "Invalid long address");
+		require (short != address(0), "Invalid short address");
+		require (collateral != address(0), "Invalid collateral address");
 		lpPool = createPool(long, short);
 		collateralPoolLong = createPool(long, collateral);
 		collateralPoolShort = createPool(short, collateral);
@@ -82,6 +85,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 	// sells the specified token for the other token in the specified pool
 	// positive amount = exact input, negative amount = exact output
 	function sellToken(address pool, bool zeroForOne, int256 amount) public {
+		require (pool != address(0), "Invalid pool address");
+		require (amount != 0, "Amount must be greater than 0");
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
 		uniswapPool.swap(msg.sender, zeroForOne, amount, 0, bytes(""));
@@ -89,6 +94,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 
 	// adds liquidity to the specified pool
 	function provideLiquidity(address pool, uint128 amount) public {
+		require (pool != address(0), "Invalid pool address");
+		require (amount > 0, "Amount must be greater than 0");
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
 		uniswapPool.mint(msg.sender, 0, MAX_TICK, amount, bytes(""));
