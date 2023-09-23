@@ -24,7 +24,7 @@ contract LongShortPairCreatorTest is Test {
 
 
 	function setUp() public {
-		gnosis_mainnet_fork = vm.createFork(vm.envString("GOERLI_RPC_URL"));
+		gnosis_mainnet_fork = vm.createFork(vm.envString("RPC_URL"));
 		assertEq(gnosis_mainnet_usdc, 0x07865c6E87B9F70255377e024ace6630C1Eaa37F);
 		vm.selectFork(gnosis_mainnet_fork);
 		assertEq(vm.activeFork(), gnosis_mainnet_fork);

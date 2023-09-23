@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/RollingPool.sol";
 import "../src/MultiLongShortPair.sol";
+import "../src/UniswapV3Wrapper.sol";
+
+import "uniswapv3-core/contracts/interfaces/IUniswapV3Factory.sol";
 
 interface IUSDC {
     function balanceOf(address account) external view returns (uint256);
@@ -28,7 +31,10 @@ contract RollingPoolTest is Test {
     FutureMock public collateral;
     MultiLongShortPair public mlsp;
     RollingPool public pool;
+    UniswapV3Wrapper public wrapper;
+    address factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
     address FINDER = 0xE60dBa66B85E10E7Fd18a67a6859E241A243950e;
+    address WETH9 = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
 
     IUSDC usdc = IUSDC(0x07865c6E87B9F70255377e024ace6630C1Eaa37F);
     function mint() public {
@@ -38,10 +44,14 @@ contract RollingPoolTest is Test {
     }
 
     function setUp() public {
-        uint256 gnosis_mainnet_fork = vm.createFork(vm.envString("GOERLI_RPC_URL"));
-		vm.selectFork(gnosis_mainnet_fork);
+        uint256 fork = vm.createFork(vm.envString("RPC_URL"));
+		vm.selectFork(fork);
 
-        mlsp = new MultiLongShortPair("asd", address(usdc), FINDER);
+        wrapper = new UniswapV3Wrapper(factory, WETH9);
+        mlsp = new MultiLongShortPair(bytes32("asd"), address(usdc), address(wrapper), FINDER);
+        console.logAddress(address(wrapper));
+        console.logAddress(address(mlsp));
+        console.logAddress(address(pool));
         pool = new RollingPool(mlsp);
     }
 

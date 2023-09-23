@@ -58,11 +58,16 @@ contract MultiLongShortPair {
 	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper, address _finder) {
 		name = _name;
 		uniswapV3Wrapper = UniswapV3Wrapper(_uniswapV3Wrapper);
+		require(address(uniswapV3Wrapper) != address(0), "Invalid uniswap wrapper");
 
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
+		require(address(settlementType) != address(0), "Invalid settlement type");
 		finder = FinderInterface(_finder);
+		require(address(finder) != address(0), "Invalid finder");
 		tokenFactory = new TokenFactory();
+		require(address(tokenFactory) != address(0), "Invalid token factory");
 		lspCreator = new LongShortPairCreator(finder, tokenFactory, address(0));
+		require(address(lspCreator) != address(0), "Invalid lsp creator");
 		lspParams = LongShortPairCreator.CreatorParams({
 			pairName: "",
 			expirationTimestamp: 0,
@@ -82,7 +87,6 @@ contract MultiLongShortPair {
 		});
 
 		_newFuturePeriod();
-		newestFutureId--;
 	}
 
 	function setLspParams() internal {
@@ -100,8 +104,12 @@ contract MultiLongShortPair {
 	function _newFuturePeriod() internal {
 		newestFutureId++;
 		setLspParams();
-        LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
+
+		LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
+		require(address(lsp) != address(0), "Failed to create lsp");
 		address pool = uniswapV3Wrapper.createPool(address(lsp.longToken()), address(lsp.shortToken()));
+		require(pool != address(0), "Failed to create pool");
+
 		futures[newestFutureId] = FuturePeriod({
 			lsp: lsp,
 			pool: pool,
