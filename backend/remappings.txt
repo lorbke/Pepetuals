@@ -4,3 +4,6 @@ forge-std/=lib/forge-std/src/
 protocol/=lib/protocol/
 @openzeppelin/=lib/openzeppelin-contracts/
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/
+@uniswap/v3-core/=lib/uniswapv3-core/
+uniswapv3-core/=lib/uniswapv3-core/
+uniswapv3-periphery/=lib/uniswapv3-periphery/

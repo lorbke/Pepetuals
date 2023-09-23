@@ -24,7 +24,7 @@ contract ShareToken is ERC20, Ownable {
 contract RollingPool {
     using Math for uint256;
 
-    MultiLongShortPair public lsp;
+    MultiLongShortPair public mlsp;
     ShareToken public share;
     IERC20 public oldFuture;
     IERC20 public newFuture;
@@ -32,14 +32,11 @@ contract RollingPool {
     bool public rolling;
     uint256 public rollingStartBlock;
 
-    constructor(MultiLongShortPair _lsp) {
+    constructor(MultiLongShortPair _mlsp) {
         share = new ShareToken("Pool Shares", "POOL");
-        lsp = _lsp;
-        newFuture = lsp.getNewestFuturePeriod().lsp.longToken();
-        // LongShortPair(lsp.getNewestFuturePeriod().lsp);
-        newFuture = lsp;
+        mlsp = _mlsp;
+        newFuture = mlsp.getNewestLsp().longToken();
         rolling = false;
-        // twamm = new TWAMM();
     }
 
     function getFutureBalance(address account) external view returns (uint256) {
@@ -70,7 +67,7 @@ contract RollingPool {
     }
 
     function startRollover() external {
-        IERC20 future = lsp.activeFuture().longToken;
+        IERC20 future = mlsp.getNewestLsp().longToken();
         require(future != newFuture, "no new period");
         oldFuture = newFuture;
         newFuture = future;

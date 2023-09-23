@@ -24,10 +24,10 @@ contract Api {
     mapping(bytes32=>mapping(uint8=>MultiLongShortPair)) multiLongShortPairs;
     mapping(bytes32=>mapping(uint8=>RollingPool)) rollingPools;
     bytes32[] public stockNames;
-    IERC20 currency;
+    IERC20 collateral;
 
-    constructor(IERC20 _currency) {
-        currency = _currency;
+    constructor(IERC20 _collateral) {
+        collateral = _collateral;
     }
 
     function getStockNames() public view returns (bytes32[] memory) {
@@ -36,25 +36,26 @@ contract Api {
 
     function registerStock(bytes32 name) public {
         stockNames.push(name);
-        MultiLongShortPair lsp = new MultiLongShortPair(currency);
+        MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral));
         multiLongShortPairs[name][1] = lsp;
         rollingPools[name][1] = new RollingPool(lsp);
     }
 
     function buy(FutureIdentifier calldata ident, uint256 amount) public {
         MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-        currency.transferFrom(msg.sender, address(this), amount);
-        currency.approve(address(mlsp), amount);
+        collateral.transferFrom(msg.sender, address(this), amount);
+        collateral.approve(address(mlsp), amount);
         uint32 period = _isPerpetual(ident) ? mlsp.newestFutureId() : ident.period; 
-        mlsp.mint(address(this), period, amount);
+        mlsp.getLsp(period).create(amount);
         // trade short to long or reverse
+        IERC20 longToken = IERC20(mlsp.getNewestLsp().longToken());
 
         if (!_isPerpetual(ident)) {
-            mlsp.activeFuture().longToken.transfer(msg.sender, amount);
+            longToken.transfer(msg.sender, amount);
             return;
         }
         RollingPool rp = rollingPools[ident.name][ident.leverage];
-        mlsp.activeFuture().longToken.approve(address(rp), amount);
+        longToken.approve(address(rp), amount);
         rp.deposit(amount);
         rp.share().transfer(msg.sender, amount);
     }
@@ -65,11 +66,11 @@ contract Api {
 
     function redeem(FutureIdentifier calldata ident, uint256 amount) public {
         require(_isPerpetual(ident) == false);
-        MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-        IERC20 token = mlsp.getFutureToken(ident.period, ident.long);
-        token.transferFrom(msg.sender, address(this), amount);
-        token.approve(address(mlsp), amount);
-        mlsp.redeem(address(this), ident.period, ident.long, amount);
+        // MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+        // IERC20 token = mlsp.getFutureToken(ident.period, ident.long);
+        // token.transferFrom(msg.sender, address(this), amount);
+        // token.approve(address(mlsp), amount);
+        // mlsp.redeem(address(this), ident.period, ident.long, amount);
         // mlsp.
         // mlsp.futures[0];
     }
@@ -81,7 +82,7 @@ contract Api {
             token = rp.share();
         } else {
             MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-            token = mlsp.getFutureToken(ident.period, ident.long);
+            // token = mlsp.getFutureToken(ident.period, ident.long);
         }
         return token;
     }
@@ -93,9 +94,10 @@ contract Api {
             token = rp.share();
         } else {
             MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-            token = mlsp.getFutureToken(ident.period, ident.long);
+            // token = mlsp.getFutureToken(ident.period, ident.long);
         }
-        return token.balanceOf(account);
+        return 0;
+        // return token.balanceOf(account);
     }
 
     function _isPerpetual(FutureIdentifier calldata ident) internal pure returns (bool) {
@@ -109,7 +111,7 @@ contract Api {
     function cheatFinishPeriod(FutureIdentifier calldata ident, uint32 priceChange) public {
         require(_isPerpetual(ident) == false);
         MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-        mlsp.cheatFinishPeriod(ident.period, priceChange);
+        // mlsp.cheatFinishPeriod(ident.period, priceChange);
     }
 
 }
