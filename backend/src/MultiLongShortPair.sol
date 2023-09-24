@@ -8,7 +8,7 @@ import {LinearLongShortPairFinancialProductLibrary} from "UMA/packages/core/cont
 import {FinderInterface} from "UMA/packages/core/contracts/data-verification-mechanism/interfaces/FinderInterface.sol";
 import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/common/TokenFactory.sol";
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
-import {UniswapV3Wrapper} from "./UniswapV3Wrapper.sol";
+// import {UniswapV3Wrapper} from "./UniswapV3Wrapper.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -40,7 +40,7 @@ contract MultiLongShortPair {
 	mapping(uint32 => FuturePeriod) public futures;
 	uint32 public newestFutureId = 0;
 
-	UniswapV3Wrapper uniswapV3Wrapper;
+	// UniswapV3Wrapper uniswapV3Wrapper;
 	LinearLongShortPairFinancialProductLibrary settlementType;
 	FinderInterface finder;
 	TokenFactory tokenFactory;
@@ -54,8 +54,8 @@ contract MultiLongShortPair {
 	constructor(bytes32 _name, address _collateral, address _uniswapV3Wrapper, address _finder) {
 		name = _name;
 
-		uniswapV3Wrapper = UniswapV3Wrapper(_uniswapV3Wrapper);
-		require(address(uniswapV3Wrapper) != address(0), "Invalid uniswap wrapper");
+		// uniswapV3Wrapper = UniswapV3Wrapper(_uniswapV3Wrapper);
+		// require(address(uniswapV3Wrapper) != address(0), "Invalid uniswap wrapper");
 		settlementType = new LinearLongShortPairFinancialProductLibrary();
 		require(address(settlementType) != address(0), "Invalid settlement type");
 		finder = FinderInterface(_finder);
@@ -122,12 +122,12 @@ contract MultiLongShortPair {
 		LongShortPair lsp = LongShortPair(lspCreator.createLongShortPair(lspParams));
 		require(address(lsp) != address(0), "Failed to create lsp");
 
-		(address poolLongShort, address poolLongCollat, address poolShortCollat) =
-		uniswapV3Wrapper.createLpAndCollateralPools(address(lsp.longToken()), address(lsp.shortToken()),
-		address(lspParams.collateralToken));
-		require(poolLongShort != address(0), "Failed to create long-short pool");
-		require(poolLongCollat != address(0), "Failed to create long-collateral pool");
-		require(poolShortCollat != address(0), "Failed to create short-collateral pool");
+		// (address poolLongShort, address poolLongCollat, address poolShortCollat) =
+		// uniswapV3Wrapper.createLpAndCollateralPools(address(lsp.longToken()), address(lsp.shortToken()),
+		// address(lspParams.collateralToken));
+		// require(poolLongShort != address(0), "Failed to create long-short pool");
+		// require(poolLongCollat != address(0), "Failed to create long-collateral pool");
+		// require(poolShortCollat != address(0), "Failed to create short-collateral pool");
 		UniswapMock mock = new UniswapMock(address(lsp.longToken()), address(lsp.shortToken()));
 		UniswapMock mockl = new UniswapMock(address(lsp.longToken()), address(lspParams.collateralToken));
 		UniswapMock mocks = new UniswapMock(address(lsp.longToken()), address(lspParams.collateralToken));
@@ -138,9 +138,9 @@ contract MultiLongShortPair {
 
 		futures[newestFutureId] = FuturePeriod({
 			lsp: lsp,
-			poolLongShort: poolLongShort,
-			poolLongCollat: poolLongCollat,
-			poolShortCollat: poolShortCollat,
+			poolLongShort: address(0),
+			poolLongCollat: address(0),
+			poolShortCollat: address(0),
 			poolLongShortMock: poolLongShortMock,
 			poolLongCollatMock: poolLongCollatMock,
 			poolShortCollatMock:poolShortCollatMock,
@@ -157,24 +157,24 @@ contract MultiLongShortPair {
 		_newFuturePeriod();
 	}
 
-	function cheatNewFuturePeriod() public {
+	function cheatNewFuturePeriod() external {
 		_newFuturePeriod();
 	}
 
-	function getLsp(uint32 periodId) public view returns (LongShortPair lsp) {
+	function getLsp(uint32 periodId) external view returns (LongShortPair lsp) {
 		require (periodId <= newestFutureId, "Invalid period id");
 		return futures[periodId].lsp;
 	}
 
-	function getPoolLongShort(uint32 periodId) public view returns (address) {
+	function getPoolLongShort(uint32 periodId) external view returns (address) {
 		return futures[periodId].poolLongShortMock;
 	}
 
-	function getPoolLongCollat(uint32 periodId) public view returns (address) {
+	function getPoolLongCollat(uint32 periodId) external view returns (address) {
 		return futures[periodId].poolLongCollat;
 	}
 
-	function getPoolShortCollat(uint32 periodId) public view returns (address) {
+	function getPoolShortCollat(uint32 periodId) external view returns (address) {
 		return futures[periodId].poolShortCollat;
 	}
 

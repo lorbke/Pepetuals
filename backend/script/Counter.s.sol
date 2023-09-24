@@ -33,7 +33,7 @@ contract MyScript is Script {
         // vm.startBroadcast(deployerPrivateKey);
 
         // wrapper = new UniswapV3Wrapper(factory, WETH9, nonfungiblePositionManager);
-        // collateral = usdc;
+        collateral = usdc;
         // api = new Api(IERC20(collateral), address(wrapper), FINDER);
         // MultiLongShortPair mlsp = new MultiLongShortPair("aapl", address(collateral), address(wrapper), FINDER);
         // MultiLongShortPair mlspg = new MultiLongShortPair("goog", address(collateral), address(wrapper), FINDER);
