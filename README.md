@@ -23,7 +23,11 @@ Mainly used as a wrapper for easy usability from the frontend.
 
 
 ## Frontend:
-
+The frontend is built in multiple frameworks. The main underlying framework is React. The main components are build with [Near](https://near.org/) and deployed on their testnet ([LSC Component](https://test.near.org/paulg00.testnet/widget/LSC.Main),[LSP Compoennt](https://test.near.org/paulg00.testnet/widget/LSP.Main)). These two components use the bootstrap framework for styling. For renderening of these components a gateway in [Next.js](https://nextjs.org) was created. This gateway uses tailwind navigation components and for the basic website styling, but uses bootstrap for the Near components.
+With this concept anyone who would like to implement our service can add our Near Widget wo their gateway/website.
+The two main components are structured in the following way:
+1. The LSC (Long/Short Converter) component to swap your USDC funds to a future/perpetular future.
+2. The LSP (Long/Short Positions) component to show all of your current positions youre holding.
 
 # Deploy
 
