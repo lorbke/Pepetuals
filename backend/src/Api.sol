@@ -26,7 +26,7 @@ contract Api is IUniswapV3MintCallback{
 
     mapping(bytes32=>mapping(uint8=>MultiLongShortPair)) multiLongShortPairs;
     mapping(bytes32=>mapping(uint8=>RollingPool)) rollingPools;
-    bytes32[] public stockNames;
+    bytes32[] public futureNames;
     IERC20 collateral;
     UniswapV3Wrapper uniswapV3Wrapper;
     address finder;
@@ -37,12 +37,12 @@ contract Api is IUniswapV3MintCallback{
         finder = _finder;
     }
 
-    function getStockNames() public view returns (bytes32[] memory) {
-        return stockNames;
+    function getFutureNames() public view returns (bytes32[] memory) {
+        return futureNames;
     }
 
-    function registerStock(bytes32 name) public {
-        stockNames.push(name);
+    function registerFuture(bytes32 name) public {
+        futureNames.push(name);
         MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), address(uniswapV3Wrapper), finder);
         multiLongShortPairs[name][1] = lsp;
         rollingPools[name][1] = new RollingPool(lsp);

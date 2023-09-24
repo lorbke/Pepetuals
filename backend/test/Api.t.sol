@@ -39,12 +39,12 @@ contract ApiTest is Test {
         wrapper = new UniswapV3Wrapper(factory, WETH9);
         api = new Api(IERC20(collateral), address(wrapper), FINDER);
 
-        api.registerStock("aapl");
-        api.registerStock("goog");
+        api.registerFuture("aapl");
+        api.registerFuture("goog");
     }
 
     function testNames() public {
-        bytes32[] memory stockNames = api.getStockNames();
+        bytes32[] memory stockNames = api.getFutureNames();
         assertEq(stockNames[0], "aapl");
         assertEq(stockNames[1], "goog");
     }

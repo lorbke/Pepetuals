@@ -20,22 +20,22 @@ contract Api {
 
     // mapping(bytes32=>mapping(uint8=>MultiLongShortPair)) multiLongShortPairs;
     // mapping(bytes32=>mapping(uint8=>RollingPool)) rollingPools;
-    bytes32[] public stockNames;
+    bytes32[] public futureNames;
     // IERC20 collateral;
     // address uniswapV3Wrapper;
     // address finder;
 
     constructor() {
-        registerStock("oil");
-        registerStock("pepe");
+        registerFuture("oil");
+        registerFuture("pepe");
     }
 
-    function getStockNames() public view returns (bytes32[] memory) {
-        return stockNames;
+    function getFutureNames() public view returns (bytes32[] memory) {
+        return futureNames;
     }
 
-    function registerStock(bytes32 name) public {
-        stockNames.push(name);
+    function registerFuture(bytes32 name) public {
+        futureNames.push(name);
     }
 
     function buy(FutureIdentifier calldata ident, uint256 amount) public {
@@ -49,17 +49,18 @@ contract Api {
         require(_isPerpetual(ident) == false);
     }
 
-    // function getToken(FutureIdentifier calldata ident) public view returns (IERC20) {
-    //     IERC20 token;
-    //     if (_isPerpetual(ident)) {
-    //         RollingPool rp = rollingPools[ident.name][ident.leverage];
-    //         token = rp.share();
-    //     } else {
-    //         MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-    //         // token = mlsp.getFutureToken(ident.period, ident.long);
-    //     }
-    //     return token;
-    // }
+    function getToken(FutureIdentifier calldata ident) public view returns (address) {
+        // IERC20 token;
+        // if (_isPerpetual(ident)) {
+        //     RollingPool rp = rollingPools[ident.name][ident.leverage];
+        //     token = rp.share();
+        // } else {
+        //     MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+        //     // token = mlsp.getFutureToken(ident.period, ident.long);
+        // }
+        // return token;
+        return address(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
+    }
 
     function getBalance(FutureIdentifier calldata ident, address account) public view returns (uint256) {
         if (ident.name == 'pepe')

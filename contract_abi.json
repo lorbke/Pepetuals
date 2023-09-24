@@ -1,6 +1,22 @@
 [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_uniswapV3Wrapper",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_finder",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -94,6 +110,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "futureNames",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "components": [
           {
             "internalType": "bytes32",
@@ -139,7 +174,7 @@
   },
   {
     "inputs": [],
-    "name": "getStockNames",
+    "name": "getFutureNames",
     "outputs": [
       {
         "internalType": "bytes32[]",
@@ -148,6 +183,87 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "name",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bool",
+            "name": "long",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint32",
+            "name": "period",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "leverage",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct FutureIdentifier",
+        "name": "ident",
+        "type": "tuple"
+      }
+    ],
+    "name": "getToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "name",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bool",
+            "name": "long",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint32",
+            "name": "period",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "leverage",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct FutureIdentifier",
+        "name": "ident",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "provideLiquidity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -198,7 +314,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "registerStock",
+    "name": "registerFuture",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -241,25 +357,6 @@
     "name": "sell",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "stockNames",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]
