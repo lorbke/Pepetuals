@@ -6,7 +6,7 @@ import walletConnectModule from '@web3-onboard/walletconnect';
 import { useEffect, useState } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 
-import icon from '@/assets/images/near_social_icon.svg';
+import icon from '@/assets/images/logo.svg';
 
 const web3onboardKey = 'web3-onboard:connectedWallets';
 
@@ -74,9 +74,9 @@ export const onboard = init({
     },
   ],
   appMetadata: {
-    name: 'NEAR',
-    icon: icon.content,
-    description: 'NEAR - BOS',
+    name: 'Pepetual',
+    icon: icon.src,
+    description: 'Pepetuals for everyone and anything',
   },
   theme: 'system',
   containerElements: {},
