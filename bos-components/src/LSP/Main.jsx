@@ -24,12 +24,11 @@ if (!contractData.ok) {
 
 const getAccountId = () => {
 	if (ethers !== undefined) {
-		return Ethers.send("eth_requestAccounts", [])[0] ?? context.accountId;
+		return Ethers.send("eth_requestAccounts", [])[0] ?? undefined;
 	}
-	return context.accountId;
+	return undefined;
 };
-if (getAccountId() !== null) {
-	// TODO: causes error when near wallet???
+if (getAccountId() != undefined) {
 	Ethers.provider()
 		.getNetwork()
 		.then((chainIdData) => {
@@ -41,13 +40,13 @@ if (getAccountId() !== null) {
 		}
 	});
 }
-if (!state.address) {
-	return (<>
-		<div className="spinner-border" role="status">
-			<span className="visually-hidden">Loading...</span>
-		</div>
-	</>);
-}
+// if (!state.address) {
+// 	return (<>
+// 		<div className="spinner-border" role="status">
+// 			<span className="visually-hidden">Loading...</span>
+// 		</div>
+// 	</>);
+// }
 
 const getPositions = () => {
 	const ctr = new ethers.Contract(
@@ -87,7 +86,7 @@ const getPositions = () => {
 		}
 	});
 };
-getPositions();
+state.address != undefined ? getPositions() : undefined;
 
 const sellPosition = (token) => {
 	const ctr = new ethers.Contract(
@@ -108,7 +107,7 @@ const MainStyle = styled.div`
 `;
 return (
 	<MainStyle>
-		<div className="table-responsive mt-3 px-4 rounded">
+		{state.address != undefined && (<div className="table-responsive mt-3 px-4 rounded">
 			<table className="table table-hover m-0 text-center">
 				<thead>
 					<tr>
@@ -129,6 +128,10 @@ return (
 					</tr>))}
 				</tbody>
 			</table>
-		</div>
+		</div>)}
+		<Web3Connect
+			className={state.address == undefined ? "" : " d-none"}
+			connectLabel="Connect with Web3"
+		/>
 	</MainStyle>
 )

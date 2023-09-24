@@ -29,12 +29,11 @@ if (!contractData.ok) {
 
 const getAccountId = () => {
 	if (ethers !== undefined) {
-		return Ethers.send("eth_requestAccounts", [])[0] ?? context.accountId;
+		return Ethers.send("eth_requestAccounts", [])[0] ?? undefined;
 	}
-	return context.accountId;
+	return undefined;
 };
-if (getAccountId() !== null) {
-	// TODO: causes error when near wallet???
+if (getAccountId() != undefined) {
 	Ethers.provider()
 		.getNetwork()
 		.then((chainIdData) => {
