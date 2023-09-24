@@ -20,22 +20,22 @@ contract Api {
 
     // mapping(bytes32=>mapping(uint8=>MultiLongShortPair)) multiLongShortPairs;
     // mapping(bytes32=>mapping(uint8=>RollingPool)) rollingPools;
-    bytes32[] public stockNames;
+    bytes32[] public futureNames;
     // IERC20 collateral;
     // address uniswapV3Wrapper;
     // address finder;
 
     constructor() {
-        registerStock("oil");
-        registerStock("pepe");
+        registerFuture("oil");
+        registerFuture("pepe");
     }
 
-    function getStockNames() public view returns (bytes32[] memory) {
-        return stockNames;
+    function getFutureNames() public view returns (bytes32[] memory) {
+        return futureNames;
     }
 
-    function registerStock(bytes32 name) public {
-        stockNames.push(name);
+    function registerFuture(bytes32 name) public {
+        futureNames.push(name);
     }
 
     function buy(FutureIdentifier calldata ident, uint256 amount) public {
