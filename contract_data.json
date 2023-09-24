@@ -1,7 +1,7 @@
 {
     "5": {
         "name": "goerli",
-        "rpcUrl": "https://ethereum-goerli.publicnode.com",
+        "rpcUrl": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
         "contractAddress": "0x8D9800f5035F915cB7f62e2fF0d505BB59E90b68",
         "tokens": [
             {
