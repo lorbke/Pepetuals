@@ -2,7 +2,7 @@
     "5": {
         "name": "goerli",
         "rpcUrl": "https://ethereum-goerli.publicnode.com",
-        "contractAddress": "0x462a289860722D97873B60501D09291B70ebC16d",
+        "contractAddress": "0x0b6Cd354290eef2832DE62F56107811ADC78C7D9",
         "tokens": [
             {
                 "name": "Consumer Price Index Long",
