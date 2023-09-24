@@ -33,7 +33,13 @@ export const MainNavbar = () => {
 					className="sm:hidden"
 				/>
 				<NavbarBrand>
-					<Image src={icon} alt="logo" width={50} height={50}/>
+					<Image 
+						src={icon} 
+						alt="logo" 
+						width={50} 
+						height={50}
+						priority
+					/>
 					<p className="font-bold text-inherit text-xl"><span className="text-green-700">Pepe</span>tuals</p>
 				</NavbarBrand>
 			</NavbarContent>
