@@ -21,6 +21,7 @@ contract ApiTest is Test {
     address factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
     address FINDER = 0xE60dBa66B85E10E7Fd18a67a6859E241A243950e;
     address WETH9 = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
+    address nonfungiblePositionManager = 0xC36442b4a4522E871399CD717aBDD847Ab11FE88;
 
     IUSDC usdc = IUSDC(0x07865c6E87B9F70255377e024ace6630C1Eaa37F);
 
@@ -36,7 +37,7 @@ contract ApiTest is Test {
         collateral = usdc;
         allowMint();
 
-        wrapper = new UniswapV3Wrapper(factory, WETH9);
+        wrapper = new UniswapV3Wrapper(factory, WETH9, nonfungiblePositionManager);
         api = new Api(IERC20(collateral), address(wrapper), FINDER);
 
         api.registerFuture("aapl");
@@ -51,7 +52,7 @@ contract ApiTest is Test {
 
     function testBuy() public {
         collateral.mint(address(this), 11000000);
-        collateral.approve(address(api), 11000000);
+        // collateral.approve(address(api), 11000000);
         FutureIdentifier memory ident = FutureIdentifier("aapl", true, 1, 1);
         api.provideLiquidity(ident, 10000000);
         api.buy(ident, 1000);

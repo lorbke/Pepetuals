@@ -12,6 +12,10 @@ import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/comm
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
 import {PeripheryImmutableState} from "uniswapv3-periphery/contracts/base/PeripheryImmutableState.sol";
+import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import 'uniswapv3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -39,15 +43,24 @@ import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 //     uint256 optimisticOracleProposerBond;
 // }
 
-contract UniswapV3Wrapper is PoolInitializer, IUniswapV3MintCallback {
+contract UniswapV3Wrapper is PoolInitializer {
 	using SafeERC20 for IERC20;
 
-	uint24 constant FEE = 3000;
-	int24 internal constant MAX_TICK = 887272;
-	int24 internal constant MIN_TICK = -887272;
+	uint24 constant FEE = 100;
 	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
-	constructor(address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
+	INonfungiblePositionManager public nonfungiblePositionManager;
+
+	// NFT deposit data
+	struct Deposit {
+		address owner;
+		uint128 liquidity;
+		address token0;
+		address token1;
+    }
+
+	constructor(address _uniswapV3Factory, address _WETH9, address _nonfungiblePositionManager) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
+		nonfungiblePositionManager = INonfungiblePositionManager(_nonfungiblePositionManager);
 	}
 
 	// helper function for computing square roots
@@ -77,7 +90,7 @@ contract UniswapV3Wrapper is PoolInitializer, IUniswapV3MintCallback {
 	// - lpPool: long/short
 	// - collateralPoolLong: long/collateral
 	// - collateralPoolShort: short/collateral
-	function createLpAndCollateralPools(address long, address short, address collateral) public returns (address lpPool, address collateralPoolLong, address collateralPoolShort) {
+	function createLpAndCollateralPools(address long, address short, address collateral) external returns (address lpPool, address collateralPoolLong, address collateralPoolShort) {
 		require (long != address(0), "Invalid long address");
 		require (short != address(0), "Invalid short address");
 		require (collateral != address(0), "Invalid collateral address");
@@ -88,7 +101,7 @@ contract UniswapV3Wrapper is PoolInitializer, IUniswapV3MintCallback {
 
 	// sells the specified token for the other token in the specified pool
 	// positive amount = exact input, negative amount = exact output
-	function sellToken(address pool, bool zeroForOne, int256 amount) public {
+	function sellToken(address pool, bool zeroForOne, int256 amount) external {
 		require (pool != address(0), "Invalid pool address");
 		require (amount != 0, "Amount must be greater than 0");
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
@@ -97,13 +110,31 @@ contract UniswapV3Wrapper is PoolInitializer, IUniswapV3MintCallback {
 	}
 
 	// adds liquidity to the specified pool
-	function provideLiquidity(address pool, uint128 amount) public {
-		require (pool != address(0), "Invalid pool address");
-		require (amount > 0, "Amount must be greater than 0");
-		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
+	function provideLiquidity(address token0, address token1, uint256 token0Amount, uint256 token1Amount) external
+	returns (uint256 tokenId, uint128 liquidity, uint amount0, uint amount1) {
+		require (token0Amount > 0, "Amount must be greater than 0");
+		require (token1Amount > 0, "Amount must be greater than 0");
 
-		console.log(amount);
-		uniswapPool.mint(msg.sender, -1, 10000, 100, bytes(""));
+		TransferHelper.safeApprove(token0, address(nonfungiblePositionManager), token0Amount);
+		TransferHelper.safeApprove(token1, address(nonfungiblePositionManager), token1Amount);
+
+		INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
+			token0: token0,
+			token1: token1,
+			fee: FEE,
+			tickLower: TickMath.MIN_TICK,
+			tickUpper: TickMath.MAX_TICK,
+			amount0Desired: token0Amount,
+			amount1Desired: token1Amount,
+			amount0Min: 0,
+			amount1Min: 0,
+			recipient: msg.sender,
+			deadline: block.timestamp
+		});
+
+		(tokenId, liquidity, amount0, amount1) = nonfungiblePositionManager.mint(params);
+
+		return (tokenId, liquidity, amount0, amount1);
 	}
 
 	function uniswapV3MintCallback(

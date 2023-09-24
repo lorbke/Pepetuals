@@ -68,7 +68,7 @@ contract Api is IUniswapV3MintCallback{
         // IUniswapV3Pool uniswapPool = IUniswapV3Pool(mlsp.getPoolLongCollat(period));
         // uniswapPool.mint(address(this), -887274, 887272, 0, bytes(""));
 
-        uniswapV3Wrapper.provideLiquidity(mlsp.getPoolShortCollat(period), uint128(amount / 4));
+        uniswapV3Wrapper.provideLiquidity(address(mlsp.getLsp(period).longToken()), address(mlsp.getLsp(period).shortToken()), uint128(amount / 4), uint128(amount / 4));
         // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolLongShort(period), uint128(amount / 4));
         // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolLongCollat(period), uint128(amount / 4));
     }
