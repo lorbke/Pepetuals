@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "forge-std/Test.sol";
+
 import {LongShortPairCreator} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPairCreator.sol";
 import {LongShortPair} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPair.sol";
 import {LongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LongShortPairFinancialProductLibrary.sol";
@@ -100,7 +102,8 @@ contract UniswapV3Wrapper is PoolInitializer, IUniswapV3MintCallback {
 		require (amount > 0, "Amount must be greater than 0");
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
-		uniswapPool.mint(msg.sender, MIN_TICK, MAX_TICK, amount, bytes(""));
+		console.log(amount);
+		uniswapPool.mint(msg.sender, -1, 10000, 100, bytes(""));
 	}
 
 	function uniswapV3MintCallback(
