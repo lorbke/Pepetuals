@@ -11,6 +11,9 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./MultiLongShortPair.sol";
 import "./RollingPool.sol";
 
+import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
+import 'uniswapv3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
+
 struct FutureIdentifier {
     bytes32 name;
     bool long;
@@ -18,7 +21,7 @@ struct FutureIdentifier {
     uint8 leverage;
 }
 
-contract Api {
+contract Api is IUniswapV3MintCallback{
     using SafeERC20 for IERC20;
 
     mapping(bytes32=>mapping(uint8=>MultiLongShortPair)) multiLongShortPairs;
@@ -62,38 +65,10 @@ contract Api {
         mlsp.getLsp(period).longToken().approve(mlsp.getPoolLongShort(period), amount);
         mlsp.getLsp(period).longToken().approve(mlsp.getPoolLongCollat(period), amount);
 
-        // man.addLiquidity(
-		// 	mlsp.getLsp(period).shortToken(),
-		// 	mlsp.getLsp(period).longToken(),
-		// 	10000,
-		// 	10000,
-		// 	0,
-		// 	0,
-		// 	msg.sender,
-		// 	block.timestamp
-		// );
+        // IUniswapV3Pool uniswapPool = IUniswapV3Pool(mlsp.getPoolLongCollat(period));
+        // uniswapPool.mint(address(this), -887274, 887272, 0, bytes(""));
 
-
-        // INonfungiblePositionManager.MintParams memory params =
-        //     INonfungiblePositionManager.MintParams({
-        //         token0: mlsp.getLsp(period).shortToken(),
-        //         token1: mlsp.getLsp(period).longToken(),
-        //         fee: 3000,
-        //         tickLower: 0,
-        //         tickUpper: 887272,
-        //         amount0Desired: amount,
-        //         amount1Desired: amount,
-        //         amount0Min: 0,
-        //         amount1Min: 0,
-        //         recipient: address(this),
-        //         deadline: block.timestamp
-        //     });
-
-        // man.mint(params);
-        // Note that the pool defined by DAI/USDC and fee tier 0.3% must already be created and initialized in order to mint
-        // (tokenId, liquidity, amount0, amount1) = man.mint(params);
-
-        uniswapV3Wrapper.provideLiquidity(mlsp.getPoolShortCollat(period), uint128(1));
+        uniswapV3Wrapper.provideLiquidity(mlsp.getPoolShortCollat(period), uint128(amount / 4));
         // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolLongShort(period), uint128(amount / 4));
         // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolLongCollat(period), uint128(amount / 4));
     }
@@ -173,6 +148,14 @@ contract Api {
         MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
         // mlsp.cheatFinishPeriod(ident.period, priceChange);
     }
+
+    function uniswapV3MintCallback(
+        uint256 amount0Owed,
+        uint256 amount1Owed,
+        bytes calldata data
+    ) external {
+		require (1 == 2, "SHIIIT!");
+	}
 
 }
 

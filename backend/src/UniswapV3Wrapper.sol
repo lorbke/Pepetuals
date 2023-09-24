@@ -10,6 +10,7 @@ import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/comm
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
 import {PeripheryImmutableState} from "uniswapv3-periphery/contracts/base/PeripheryImmutableState.sol";
+import 'uniswapv3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -36,7 +37,7 @@ import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 //     uint256 optimisticOracleProposerBond;
 // }
 
-contract UniswapV3Wrapper is PoolInitializer {
+contract UniswapV3Wrapper is PoolInitializer, IUniswapV3MintCallback {
 	using SafeERC20 for IERC20;
 
 	uint24 constant FEE = 3000;
@@ -100,5 +101,13 @@ contract UniswapV3Wrapper is PoolInitializer {
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
 		uniswapPool.mint(msg.sender, MIN_TICK, MAX_TICK, amount, bytes(""));
+	}
+
+	function uniswapV3MintCallback(
+        uint256 amount0Owed,
+        uint256 amount1Owed,
+        bytes calldata data
+    ) external {
+		require (1 == 2, "SHIIIT!");
 	}
 }
