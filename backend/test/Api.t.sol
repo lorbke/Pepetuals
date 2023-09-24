@@ -51,15 +51,35 @@ contract ApiTest is Test {
         bytes32[] memory stockNames = api.getFutureNames();
         assertEq(stockNames[0], "aapl");
         assertEq(stockNames[1], "goog");
-
     }
 
     function testBuy() public {
-        FutureIdentifier memory long = FutureIdentifier("aapl", true, 1, 1);
-        FutureIdentifier memory short = FutureIdentifier("aapl", false, 1, 1);
+        // FutureIdentifier memory long = FutureIdentifier("aapl", true, 1, 1);
+        // FutureIdentifier memory short = FutureIdentifier("aapl", false, 1, 1);
 
-        address longToken = address(api.getToken(long));
-        address shortToken = address(api.getToken(short));
+        // address longToken = address(api.getToken(long));
+        // address shortToken = address(api.getToken(short));
+
+        FutureIdentifier memory ident = FutureIdentifier("aapl", true, 1, 1);
+        collateral.mint(address(this), 20000e6);
+        collateral.approve(address(api), 20000e6);
+        api.provideLiquidity(ident, 20000e6);
+
+        ident = FutureIdentifier("aapl", true, 1, 1);
+        collateral.mint(address(this), 20000);
+        collateral.approve(address(api), 20000);
+        api.buy(ident, 20000);
+
+        assertEq(api.getBalance(ident, address(this)), 40000);
+        assertEq(collateral.balanceOf(address(this)), 0);
+    }
+
+    function testBuyPepe() public {
+        // FutureIdentifier memory long = FutureIdentifier("aapl", true, type(uint32).max, 1);
+        // FutureIdentifier memory short = FutureIdentifier("aapl", false, type(uint32).max, 1);
+
+        // address longToken = address(api.getToken(long));
+        // address shortToken = address(api.getToken(short));
 
         FutureIdentifier memory ident = FutureIdentifier("aapl", true, 1, 1);
         collateral.mint(address(this), 20000e6);

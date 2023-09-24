@@ -99,7 +99,8 @@ contract Api {
     }
 
     function sell(FutureIdentifier calldata ident, uint256 amount) public {
-        
+        IMultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+        IERC20(mlsp.getNewestLongToken()).transferFrom(msg.sender, address(this), amount);
     }
 
     function redeem(FutureIdentifier calldata ident, uint256 amount) public {

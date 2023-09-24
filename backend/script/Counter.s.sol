@@ -45,15 +45,29 @@ contract MyScript is Script {
         // api.registerFuture("pepe30495", IMultiLongShortPair(address(mlsp)));
         // api.registerFuture("oil2304", IMultiLongShortPair(address(mlspg)));
         vm.stopBroadcast();
-    }
 
-    function run2() external {
+        vm.startBroadcast(deployerPrivateKey);
         MultiLongShortPair mlsp = new MultiLongShortPair("pepe", address(collateral), address(wrapper), FINDER);
-        MultiLongShortPair mlspg = new MultiLongShortPair("oil", address(collateral), address(wrapper), FINDER);
+        // MultiLongShortPair mlspg = new MultiLongShortPair("oil", address(collateral), address(wrapper), FINDER);
 
         api.registerFuture("pepe", IMultiLongShortPair(address(mlsp)));
-        api.registerFuture("oil", IMultiLongShortPair(address(mlspg)));
+        // api.registerFuture("oil", IMultiLongShortPair(address(mlspg)));
+
+        vm.stopBroadcast();
     }
+
+    // function run2() external {
+    //     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    //     vm.startBroadcast(deployerPrivateKey);
+
+    //     MultiLongShortPair mlsp = new MultiLongShortPair("pepe", address(collateral), address(wrapper), FINDER);
+    //     MultiLongShortPair mlspg = new MultiLongShortPair("oil", address(collateral), address(wrapper), FINDER);
+
+    //     api.registerFuture("pepe", IMultiLongShortPair(address(mlsp)));
+    //     api.registerFuture("oil", IMultiLongShortPair(address(mlspg)));
+
+    //     vm.stopBroadcast();
+    // }
 }
 
 //forge script script/Counter.sol:MyScript --rpc-url $RPC_URL --broadcast --verify -vvvv
