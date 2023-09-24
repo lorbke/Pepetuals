@@ -185,7 +185,8 @@ return (<MainStyle>
 		  height: "462px",
 		}}
 	  >
-		<div className="card-body mx-auto d-flex flex-column w-100">
+		<div className="card-body mx-auto d-flex flex-column justify-content-center w-100">
+		  {state.address != undefined && (<div className="d-flex flex-column">
 		  <div className="btn-group mb-3" role="group" aria-label="Basic example">
 			<button type="button" className={"btn btn-primary" + (state.long == true ? " active" : "")} onClick={() => State.update({ long: true })}>
 			  Long
@@ -230,18 +231,17 @@ return (<MainStyle>
 			<ToggleSwitch onChange={(e) => State.update({ leverage: (e.target.checked == true ? 2 : 1) })} value={state.leverage == 2}/>
 		  </div>
 		  <button
-			className="btn btn-primary my-3"
+			className="btn btn-primary mt-3"
 			style={{ height: "50px" }}
 			onClick={approveOrder}
 			>
 			Approve Order
-			</button>
-		  {state.address == undefined && (
+		</button>
+		</div>)}
 			<Web3Connect
-			  className="btn btn-primary m-2"
-			  connectLabel="Connect with Web3"
+				className={state.address == undefined ? "" : " d-none"}
+				connectLabel="Connect with Web3"
 			/>
-		  )}
 		</div>
 	  </div>
 	</div>
