@@ -1,7 +1,5 @@
-// // SPDX-License-Identifier: MIT-License
-// pragma solidity ^0.8.0;
-
-
+// SPDX-License-Identifier: MIT-License
+pragma solidity ^0.8.0;
 
 // import {Test, console2} from "forge-std/Test.sol";
 // import {LongShortPairCreator} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPairCreator.sol";

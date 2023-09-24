@@ -14,6 +14,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./UniswapMock.sol";
 
 contract MultiLongShortPair {
 	using SafeERC20 for IERC20;
@@ -29,6 +30,7 @@ contract MultiLongShortPair {
 		address poolLongShort;
 		address poolLongCollat;
 		address poolShortCollat;
+		address poolLongShortMock;
 		uint256 startTimestamp;
 	}
 
@@ -124,12 +126,15 @@ contract MultiLongShortPair {
 		require(poolLongShort != address(0), "Failed to create long-short pool");
 		require(poolLongCollat != address(0), "Failed to create long-collateral pool");
 		require(poolShortCollat != address(0), "Failed to create short-collateral pool");
+		UniswapMock mock = new UniswapMock(address(lsp.longToken()), address(lsp.shortToken()));
+		address poolLongShortMock = address(mock);
 
 		futures[newestFutureId] = FuturePeriod({
 			lsp: lsp,
 			poolLongShort: poolLongShort,
 			poolLongCollat: poolLongCollat,
 			poolShortCollat: poolShortCollat,
+			poolLongShortMock: poolLongShortMock,
 			startTimestamp: block.timestamp
 		});
 	}
@@ -153,7 +158,7 @@ contract MultiLongShortPair {
 	}
 
 	function getPoolLongShort(uint32 periodId) public view returns (address) {
-		return futures[periodId].poolLongShort;
+		return futures[periodId].poolLongShortMock;
 	}
 
 	function getPoolLongCollat(uint32 periodId) public view returns (address) {

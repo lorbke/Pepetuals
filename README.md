@@ -31,6 +31,9 @@ To test it yourself some solidity versions in the uniswap contracts have to be c
 NoDelegateCall.sol
 UniswapV3Factory.sol
 UniswapV3PoolDeployer.sol
+lib/uniswapv3-periphery/contracts/base/LiquidityManagement.sol (=0.7.6)
+lib/uniswapv3-periphery/contracts/libraries/CallbackValidation.sol (=0.7.6)
+lib/uniswapv3-periphery/contracts/interfaces/external/IWETH9.sol (=0.7.6)
 
 
 Some tests aren't fully implemented and are expected to fail.
