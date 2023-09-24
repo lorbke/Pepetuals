@@ -171,7 +171,7 @@ const ToggleSwitch = ({onChange, value}) => {
 };
   
 return (<MainStyle>
-	<Widget src="pauldev.near/widget/LSC.Modal" props={{
+	<Widget src="paulg00.testnet/widget/LSC.Modal" props={{
 		chainData: state.chainId != undefined ? JSON.parse(contractData.body)[state.chainId.toString()] : undefined,
 		contractABI: contractABI.body,
 		show: state.openModal,

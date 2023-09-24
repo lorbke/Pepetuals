@@ -4,7 +4,7 @@ import { ComponentWrapperPage } from '@/components/ComponentWrapperPage';
 
 const PositionsPage: NextPageWithLayout = () => {
   return (<div className='w-full !py-3'>
-    <ComponentWrapperPage src="pauldev.near/widget/LSP.Main"/>
+    <ComponentWrapperPage src="paulg00.testnet/widget/LSP.Main"/>
   </div>);
 };
 

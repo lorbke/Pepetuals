@@ -4,7 +4,7 @@ import { ComponentWrapperPage } from '@/components/ComponentWrapperPage';
 
 const HomePage: NextPageWithLayout = () => {
   return (<div className='w-full !py-3'>
-    <ComponentWrapperPage src="pauldev.near/widget/LSC.Main"/>
+    <ComponentWrapperPage src="paulg00.testnet/widget/LSC.Main"/>
   </div>);
 };
 
