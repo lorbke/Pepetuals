@@ -2,7 +2,8 @@ State.init({
 	address: undefined,
 	chainId: undefined,
 	long: true,
-	input: 0,
+	input: undefined,
+	output: undefined,
 	perpetual: false,
 	leverage: 1,
 	openModal: false,
@@ -86,7 +87,7 @@ const ValueInput = styled.input`
 	padding: 0px;
 	appearance: textfield;
 `;
-const InputContainer = (text, statename, onClick) => {
+const InputContainer = (text, inputstate, onClick) => {
 	return (
 		<div className="bg-light rounded p-2 d-flex">
 			<ValueInput
@@ -99,10 +100,10 @@ const InputContainer = (text, statename, onClick) => {
 				minlength="1"
 				maxlength="9"
 				spellcheck="false"
-				value={onClick != undefined ? state[statename] : ""}
-				disabled={onClick == undefined}
+				value={state[inputstate]}
+				onChange={(e) => State.update({ [inputstate]: e.target.value })}
 			/>
-			<button onClick={onClick != undefined ? onClick : undefined} className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "130px" }} disabled={onClick == undefined}>{text}</button>
+			<button onClick={onClick} className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "130px" }} disabled={onClick == undefined}>{text}</button>
 		</div>
 	);
 };
@@ -183,12 +184,13 @@ return (<MainStyle>
 	}}/>
 	<div className="h-100 w-100 d-flex justify-content-center">
 	  <div
-		className="card shadow m-2 border-0 rounded-xl"
+		className="card shadow m-2 border-0"
 		style={{
 		  "--bs-bg-opacity": 0.25,
 		  "--bs-border-opacity": 0.1,
 		  width: "464px",
 		  height: "462px",
+		  borderRadius: "12px"
 		}}
 	  >
 		<div className="card-body mx-auto d-flex flex-column justify-content-center w-100">
@@ -201,11 +203,11 @@ return (<MainStyle>
 			  Short
 			</button>
 		  </div>
-		  {InputContainer("USDC", "input", undefined)}
+		  {InputContainer("USDC", "input", null)}
 		  <div
 			className="bg-light z-2 d-flex justify-content-center"
 			style={{
-			  margin: "-13px auto",
+			  margin: "-14px auto",
 			  position: "relative",
 			  borderRadius: "12px",
 			  height: "40px",
@@ -227,7 +229,7 @@ return (<MainStyle>
 			  </svg>
 			</div>
 		  </div>
-		  {InputContainer(state.selectedOutput == undefined ? "Pls. Select!" : state.selectedOutput, "input", () => State.update({ openModal: true }))}
+		  {InputContainer(state.selectedOutput == undefined ? "Select!" : state.selectedOutput, "output", () => State.update({ openModal: true }))}
 		  <div className="d-flex justify-content-between align-items-center my-2">
 			<label>Perpetual</label>
 			<ToggleSwitch onChange={(e) => State.update({ perpetual: e.target.checked })} value={state.perpetual}/>
@@ -240,6 +242,7 @@ return (<MainStyle>
 			className="btn btn-primary mt-3"
 			style={{ height: "50px" }}
 			onClick={approveOrder}
+			disabled={state.selectedOutput == undefined || state.input == undefined}
 			>
 			Approve Order
 		</button>

@@ -36,10 +36,14 @@ const ModalStyle = styled.div`
 		}
 	}
 
-	.btnhover {
+	.buttonhover {
 		&:hover {
-			color: var(--bs-gray-800);
+			color: var(--bs-gray-800) !important;
 		}
+	}
+	button:focus {
+		outline: none !important;
+		box-shadow: none !important;
 	}
 `;
 const CloseButton = styled.button`
@@ -76,11 +80,12 @@ const onCloseBtnClick = (e) => {
 	props.onClose();
 };
 
+
 return (<ModalStyle>
 	<div className={"modal basemodal" + (props.show ? " show" : "")} id={modalId} onClick={onCloseBtnClick}>
 		<div className="d-flex flex-column rounded bg-light shadow-sm" onClick={(e) => console.log(e.type)}>
 			<div className="d-flex flex-row-reverse">
-				<CloseButton className="btnhover" onClick={props.onClose}>
+				<CloseButton className="buttonhover" onClick={props.onClose}>
 					<svg
 						width="30"
 						height="30"
