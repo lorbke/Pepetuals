@@ -5,6 +5,7 @@ import "forge-std/Script.sol";
 import "../src/Api.sol";
 import "../src/UniswapV3Wrapper.sol";
 import "../src/MultiLongShortPair.sol";
+import "../src/IMultiLongShortPair.sol";
 
 interface IUSDC is IERC20{
     function balanceOf(address account) external view returns (uint256);
@@ -16,10 +17,10 @@ interface IUSDC is IERC20{
 }
 
 contract MyScript is Script {
-    Api public api;
     IUSDC public collateral;
-    UniswapV3Wrapper public wrapper;
 
+    address wrapper = 0x3C08514b6fEeFA7B8a881769c64a331789913640;
+    address api = 0x8D9800f5035F915cB7f62e2fF0d505BB59E90b68;
     address factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
     address FINDER = 0xE60dBa66B85E10E7Fd18a67a6859E241A243950e;
     address WETH9 = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
@@ -29,11 +30,11 @@ contract MyScript is Script {
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
+        // vm.startBroadcast(deployerPrivateKey);
 
-        wrapper = new UniswapV3Wrapper(factory, WETH9, nonfungiblePositionManager);
-        collateral = usdc;
-        api = new Api(IERC20(collateral), address(wrapper), FINDER);
+        // wrapper = new UniswapV3Wrapper(factory, WETH9, nonfungiblePositionManager);
+        // collateral = usdc;
+        // api = new Api(IERC20(collateral), address(wrapper), FINDER);
         // MultiLongShortPair mlsp = new MultiLongShortPair("aapl", address(collateral), address(wrapper), FINDER);
         // MultiLongShortPair mlspg = new MultiLongShortPair("goog", address(collateral), address(wrapper), FINDER);
         // api.registerFuture("aapl", IMultiLongShortPair(address(mlsp)));
@@ -44,13 +45,13 @@ contract MyScript is Script {
 
         // api.registerFuture("pepe30495", IMultiLongShortPair(address(mlsp)));
         // api.registerFuture("oil2304", IMultiLongShortPair(address(mlspg)));
-        vm.stopBroadcast();
+        // vm.stopBroadcast();
 
         vm.startBroadcast(deployerPrivateKey);
-        MultiLongShortPair mlsp = new MultiLongShortPair("pepe", address(collateral), address(wrapper), FINDER);
+        MultiLongShortPair mlsp = new MultiLongShortPair("pepe", address(collateral), wrapper, FINDER);
         // MultiLongShortPair mlspg = new MultiLongShortPair("oil", address(collateral), address(wrapper), FINDER);
 
-        api.registerFuture("pepe", IMultiLongShortPair(address(mlsp)));
+        Api(api).registerFuture("pepe", IMultiLongShortPair(address(mlsp)));
         // api.registerFuture("oil", IMultiLongShortPair(address(mlspg)));
 
         vm.stopBroadcast();
