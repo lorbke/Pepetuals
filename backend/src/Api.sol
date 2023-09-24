@@ -8,12 +8,17 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "./MultiLongShortPair.sol";
+import "./IMultiLongShortPair.sol";
 import "./RollingPool.sol";
 import "./UniswapMock.sol";
+import "./UniswapV3Wrapper.sol";
 
 import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import 'uniswapv3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
+
+interface ILongShortPair {
+    function create(uint256 tokensToCreate) external returns (uint256 collateralUsed);
+}
 
 struct FutureIdentifier {
     bytes32 name;
@@ -22,10 +27,10 @@ struct FutureIdentifier {
     uint8 leverage;
 }
 
-contract Api is IUniswapV3MintCallback{
+contract Api {
     using SafeERC20 for IERC20;
 
-    mapping(bytes32=>mapping(uint8=>MultiLongShortPair)) multiLongShortPairs;
+    mapping(bytes32=>mapping(uint8=>IMultiLongShortPair)) multiLongShortPairs;
     mapping(bytes32=>mapping(uint8=>RollingPool)) rollingPools;
     bytes32[] public futureNames;
     IERC20 collateral;
@@ -42,73 +47,47 @@ contract Api is IUniswapV3MintCallback{
         return futureNames;
     }
 
-    function registerFuture(bytes32 name) public {
+    function registerFuture(bytes32 name, IMultiLongShortPair add) public {
         futureNames.push(name);
-        MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), address(uniswapV3Wrapper), finder);
-        multiLongShortPairs[name][1] = lsp;
-        rollingPools[name][1] = new RollingPool(lsp);
+        // MultiLongShortPair lsp = new MultiLongShortPair(name, address(collateral), address(uniswapV3Wrapper), finder);
+        multiLongShortPairs[name][1] = add;
+        rollingPools[name][1] = new RollingPool(add);
     }
 
     function provideLiquidity(FutureIdentifier calldata ident, uint256 amount) public {
-        MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+        IMultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
         // collateral.approve(address(mlsp), amount);
         collateral.transferFrom(msg.sender, address(this), amount);
-        uint32 period = _isPerpetual(ident) ? mlsp.newestFutureId() : ident.period; 
+        uint32 period = ident.period; 
+        // uint32 period = _isPerpetual(ident) ? mlsp.newestFutureId() : ident.period; 
         collateral.approve(address(mlsp.getLsp(period)), amount / 2);
-        mlsp.getLsp(period).create(amount / 2);
+        ILongShortPair(mlsp.getLsp(period)).create(amount / 2);
 
         // collateral.approve(mlsp.getPoolLongCollat(period), amount / 4);
         // collateral.approve(mlsp.getPoolShortCollat(period), amount / 4);
-        mlsp.getLsp(period).shortToken().approve(mlsp.getPoolLongShort(period), amount / 4);        
+        IERC20(mlsp.getShortToken(period)).approve(mlsp.getPoolLongShort(period), amount / 4);        
         // mlsp.getLsp(period).shortToken().approve(mlsp.getPoolShortCollat(period), amount / 4);
-        mlsp.getLsp(period).longToken().approve(mlsp.getPoolLongShort(period), amount / 4);
+        IERC20(mlsp.getLongToken(period)).approve(mlsp.getPoolLongShort(period), amount / 4);
         // mlsp.getLsp(period).longToken().approve(mlsp.getPoolLongCollat(period), amount / 4);
 
         UniswapMock(mlsp.getPoolLongShort(period)).provideLiquidity(amount / 4);
     }
 
-    // function buyWithoutSwap(FutureIdentifier calldata ident, uint256 amount) public {
-    //     MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-    //     uint32 period = _isPerpetual(ident) ? mlsp.newestFutureId() : ident.period;
-    //     LongShortPair lsp = mlsp.getLsp(period);
-    //     IERC20 longToken = IERC20(lsp.longToken());
-    //     IERC20 shortToken = IERC20(lsp.shortToken());
-
-    //     collateral.approve(address(this), amount);
-    //     collateral.transferFrom(msg.sender, address(this), amount);
-    //     collateral.approve(address(lsp), amount);
-    //     lsp.create(amount);
-
-    //     uint256 tokenCount = lsp.longToken().balanceOf(address(this));
-    //     if (!_isPerpetual(ident)) {
-    //         longToken.approve(msg.sender, tokenCount);
-    //         shortToken.approve(msg.sender, tokenCount);
-    //         longToken.transfer(msg.sender, tokenCount);
-    //         shortToken.transfer(msg.sender, tokenCount);
-    //         return;
-    //     }
-
-    //     RollingPool rp = rollingPools[ident.name][ident.leverage];
-    //     longToken.approve(address(rp), tokenCount);
-    //     rp.deposit(tokenCount);
-    //     rp.share().transfer(msg.sender, rp.share().balanceOf(address(this)));
-    // }
-
     function buy(FutureIdentifier calldata ident, uint256 amount) public {
-        MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+        IMultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
         collateral.transferFrom(msg.sender, address(this), amount);
         uint32 period = ident.period; 
         if (_isPerpetual(ident)) {
-            period = mlsp.newestFutureId();
+            period = mlsp.getNewestPeriodId();
         }
         collateral.approve(address(mlsp.getLsp(period)), amount);
-        mlsp.getLsp(period).create(amount);
+        ILongShortPair(mlsp.getLsp(period)).create(amount);
         // trade short to long or reverse
-        mlsp.getLsp(period).shortToken().approve(mlsp.getPoolLongShort(period), amount);
+        IERC20(mlsp.getShortToken(period)).approve(mlsp.getPoolLongShort(period), amount);
         UniswapMock(mlsp.getPoolLongShort(period)).swap(amount, false);
         // uniswapV3Wrapper.sellToken(mlsp.getPoolLongShort(period), true, int256(amount));
 
-        IERC20 longToken = IERC20(mlsp.getNewestLsp().longToken());
+        IERC20 longToken = IERC20(mlsp.getLongToken(period));
         if (!_isPerpetual(ident)) {
             longToken.transfer(msg.sender, amount * 2);
             return;
@@ -140,8 +119,8 @@ contract Api is IUniswapV3MintCallback{
             RollingPool rp = rollingPools[ident.name][ident.leverage];
             token = rp.share();
         } else {
-            MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-            token = mlsp.getLsp(ident.period).longToken();
+            IMultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+            token = IERC20(mlsp.getLongToken(ident.period));
         }
         return token;
     }
@@ -152,8 +131,8 @@ contract Api is IUniswapV3MintCallback{
             RollingPool rp = rollingPools[ident.name][ident.leverage];
             token = rp.share();
         } else {
-            MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
-            token = mlsp.getLsp(ident.period).longToken();
+            IMultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+            token = IERC20(mlsp.getLongToken(ident.period));
         }
         return token.balanceOf(account);
     }
@@ -168,17 +147,9 @@ contract Api is IUniswapV3MintCallback{
 
     function cheatFinishPeriod(FutureIdentifier calldata ident, uint32 priceChange) public {
         require(_isPerpetual(ident) == false);
-        MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
+        // MultiLongShortPair mlsp = multiLongShortPairs[ident.name][ident.leverage];
         // mlsp.cheatFinishPeriod(ident.period, priceChange);
     }
-
-    function uniswapV3MintCallback(
-        uint256 amount0Owed,
-        uint256 amount1Owed,
-        bytes calldata data
-    ) external {
-		require (1 == 2, "SHIIIT!");
-	}
 
 }
 

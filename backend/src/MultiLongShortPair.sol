@@ -31,6 +31,8 @@ contract MultiLongShortPair {
 		address poolLongCollat;
 		address poolShortCollat;
 		address poolLongShortMock;
+		address poolLongCollatMock;
+		address poolShortCollatMock;
 		uint256 startTimestamp;
 	}
 
@@ -127,7 +129,12 @@ contract MultiLongShortPair {
 		require(poolLongCollat != address(0), "Failed to create long-collateral pool");
 		require(poolShortCollat != address(0), "Failed to create short-collateral pool");
 		UniswapMock mock = new UniswapMock(address(lsp.longToken()), address(lsp.shortToken()));
+		UniswapMock mockl = new UniswapMock(address(lsp.longToken()), address(lspParams.collateralToken));
+		UniswapMock mocks = new UniswapMock(address(lsp.longToken()), address(lspParams.collateralToken));
+
 		address poolLongShortMock = address(mock);
+		address poolLongCollatMock = address(mockl);
+		address poolShortCollatMock = address(mocks);
 
 		futures[newestFutureId] = FuturePeriod({
 			lsp: lsp,
@@ -135,6 +142,8 @@ contract MultiLongShortPair {
 			poolLongCollat: poolLongCollat,
 			poolShortCollat: poolShortCollat,
 			poolLongShortMock: poolLongShortMock,
+			poolLongCollatMock: poolLongCollatMock,
+			poolShortCollatMock:poolShortCollatMock,
 			startTimestamp: block.timestamp
 		});
 	}
@@ -169,7 +178,23 @@ contract MultiLongShortPair {
 		return futures[periodId].poolShortCollat;
 	}
 
-	function getNewestLsp() public view returns (LongShortPair lsp) {
-		return futures[newestFutureId].lsp;
+	function getNewestLsp() external view returns (address lsp) {
+		return address(futures[newestFutureId].lsp);
+	}
+
+	function getLongToken(uint32 periodId) external view returns (address token) {
+		return address(futures[periodId].lsp.longToken());
+	}
+
+	function getShortToken(uint32 periodId) external view returns (address token) {
+		return address(futures[periodId].lsp.shortToken());
+	}
+
+	function getNewestLongToken() external view returns (address token) {
+		return address(futures[newestFutureId].lsp.longToken());
+	}
+
+	function getNewestPeriodId() external view returns (uint32) {
+		return newestFutureId;
 	}
 }

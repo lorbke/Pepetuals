@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "forge-std/Test.sol";
 import "../src/Api.sol";
+import "../src/MultiLongShortPair.sol";
+import "../src/IMultiLongShortPair.sol";
 
 interface IUSDC is IERC20{
     function balanceOf(address account) external view returns (uint256);
@@ -34,13 +36,15 @@ contract ApiTest is Test {
         uint256 fork = vm.createFork(vm.envString("RPC_URL"));
 		vm.selectFork(fork);
         collateral = usdc;
-        allowMint();
 
         wrapper = new UniswapV3Wrapper(factory, WETH9, nonfungiblePositionManager);
         api = new Api(IERC20(collateral), address(wrapper), FINDER);
+        MultiLongShortPair mlsp = new MultiLongShortPair("aapl", address(collateral), address(wrapper), FINDER);
+        MultiLongShortPair mlspg = new MultiLongShortPair("goog", address(collateral), address(wrapper), FINDER);
 
-        api.registerFuture("aapl");
-        api.registerFuture("goog");
+        api.registerFuture("aapl", IMultiLongShortPair(address(mlsp)));
+        api.registerFuture("goog", IMultiLongShortPair(address(mlspg)));
+        allowMint();
     }
 
     function testNames() public {

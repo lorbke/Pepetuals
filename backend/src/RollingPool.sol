@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "./MultiLongShortPair.sol";
+import "./IMultiLongShortPair.sol";
 
 contract ShareToken is ERC20, Ownable {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) Ownable() {}
@@ -24,7 +24,7 @@ contract ShareToken is ERC20, Ownable {
 contract RollingPool {
     using Math for uint256;
 
-    MultiLongShortPair public mlsp;
+    IMultiLongShortPair public mlsp;
     ShareToken public share;
     IERC20 public oldFuture;
     IERC20 public newFuture;
@@ -32,10 +32,10 @@ contract RollingPool {
     bool public rolling;
     uint256 public rollingStartBlock;
 
-    constructor(MultiLongShortPair _mlsp) {
+    constructor(IMultiLongShortPair _mlsp) {
         share = new ShareToken("Pool Shares", "POOL");
         mlsp = _mlsp;
-        newFuture = mlsp.getNewestLsp().longToken();
+        newFuture = IERC20(mlsp.getNewestLongToken());
         rolling = false;
     }
 
@@ -67,7 +67,7 @@ contract RollingPool {
     }
 
     function startRollover() external {
-        IERC20 future = mlsp.getNewestLsp().longToken();
+        IERC20 future = IERC20(mlsp.getNewestLongToken());
         require(future != newFuture, "no new period");
         oldFuture = newFuture;
         newFuture = future;
