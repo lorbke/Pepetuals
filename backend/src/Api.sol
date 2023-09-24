@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "uniswapv3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 import "./MultiLongShortPair.sol";
 import "./RollingPool.sol";
 
@@ -56,12 +55,12 @@ contract Api {
 
         // INonfungiblePositionManager man = INonfungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88);
         // IUniswapV2Router02 router = UniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-        collateral.approve(address(man), amount);
-        collateral.approve(address(man), amount);
-        mlsp.getLsp(period).shortToken().approve(address(man), amount);        
-        mlsp.getLsp(period).shortToken().approve(address(man), amount);
-        mlsp.getLsp(period).longToken().approve(address(man), amount);
-        mlsp.getLsp(period).longToken().approve(address(man), amount);
+        collateral.approve(mlsp.getPoolLongCollat(period), amount);
+        collateral.approve(mlsp.getPoolShortCollat(period), amount);
+        mlsp.getLsp(period).shortToken().approve(mlsp.getPoolLongCollat(period), amount);        
+        mlsp.getLsp(period).shortToken().approve(mlsp.getPoolShortCollat(period), amount);
+        mlsp.getLsp(period).longToken().approve(mlsp.getPoolLongShort(period), amount);
+        mlsp.getLsp(period).longToken().approve(mlsp.getPoolLongCollat(period), amount);
 
         // man.addLiquidity(
 		// 	mlsp.getLsp(period).shortToken(),
@@ -94,7 +93,7 @@ contract Api {
         // Note that the pool defined by DAI/USDC and fee tier 0.3% must already be created and initialized in order to mint
         // (tokenId, liquidity, amount0, amount1) = man.mint(params);
 
-        // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolShortCollat(period), uint128(amount / 4));
+        uniswapV3Wrapper.provideLiquidity(mlsp.getPoolShortCollat(period), uint128(1));
         // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolLongShort(period), uint128(amount / 4));
         // uniswapV3Wrapper.provideLiquidity(mlsp.getPoolLongCollat(period), uint128(amount / 4));
     }

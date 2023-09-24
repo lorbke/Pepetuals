@@ -40,8 +40,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 	using SafeERC20 for IERC20;
 
 	uint24 constant FEE = 3000;
-	int24 internal constant MIN_TICK = -887272;
 	int24 internal constant MAX_TICK = 887272;
+	int24 internal constant MIN_TICK = -887272;
 	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
 	constructor(address _uniswapV3Factory, address _WETH9) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
@@ -75,6 +75,9 @@ contract UniswapV3Wrapper is PoolInitializer {
 	// - collateralPoolLong: long/collateral
 	// - collateralPoolShort: short/collateral
 	function createLpAndCollateralPools(address long, address short, address collateral) public returns (address lpPool, address collateralPoolLong, address collateralPoolShort) {
+		require (long != address(0), "Invalid long address");
+		require (short != address(0), "Invalid short address");
+		require (collateral != address(0), "Invalid collateral address");
 		lpPool = createPool(long, short);
 		collateralPoolLong = createPool(long, collateral);
 		collateralPoolShort = createPool(short, collateral);
@@ -83,6 +86,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 	// sells the specified token for the other token in the specified pool
 	// positive amount = exact input, negative amount = exact output
 	function sellToken(address pool, bool zeroForOne, int256 amount) public {
+		require (pool != address(0), "Invalid pool address");
+		require (amount != 0, "Amount must be greater than 0");
 		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
 		uniswapPool.swap(msg.sender, zeroForOne, amount, 0, bytes(""));
@@ -90,14 +95,10 @@ contract UniswapV3Wrapper is PoolInitializer {
 
 	// adds liquidity to the specified pool
 	function provideLiquidity(address pool, uint128 amount) public {
-		// IUniswapV2Router02 router = UniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-		// IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
+		require (pool != address(0), "Invalid pool address");
+		require (amount > 0, "Amount must be greater than 0");
+		IUniswapV3Pool uniswapPool = IUniswapV3Pool(pool);
 
-		uniswapPool.mint(
-			msg.sender, 
-			MIN_TICK, 
-			MAX_TICK, 
-			amount, 
-			0);
+		uniswapPool.mint(msg.sender, MIN_TICK, MAX_TICK, amount, bytes(""));
 	}
 }
