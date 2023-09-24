@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "forge-std/Test.sol";
-
 import {LongShortPairCreator} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPairCreator.sol";
 import {LongShortPair} from "UMA/packages/core/contracts/financial-templates/long-short-pair/LongShortPair.sol";
 import {LongShortPairFinancialProductLibrary} from "UMA/packages/core/contracts/financial-templates/common/financial-product-libraries/long-short-pair-libraries/LongShortPairFinancialProductLibrary.sol";
@@ -17,7 +15,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract MultiLongShortPair is Test {
+contract MultiLongShortPair {
 	using SafeERC20 for IERC20;
 
 	/*------------------------------------------------------------------------------------*/
@@ -88,16 +86,16 @@ contract MultiLongShortPair is Test {
 	/* 	HELPER FUNCTIONS                                                                  */
 	/*------------------------------------------------------------------------------------*/
 
-	function printLspParams() public view {
-		console.log(lspParams.pairName);
-		console.log(lspParams.expirationTimestamp);
-		console.log(lspParams.collateralPerPair);
-		console.log(string(abi.encodePacked("longSynthName: ", lspParams.longSynthName)));
-		console.log(string(abi.encodePacked("longSynthSymbol: ", lspParams.longSynthSymbol)));
-		console.log(string(abi.encodePacked("shortSynthName: ", lspParams.shortSynthName)));
-		console.log(string(abi.encodePacked("shortSynthSymbol: ", lspParams.shortSynthSymbol)));
-		console.log(string(abi.encodePacked("customAncillaryData: ", lspParams.customAncillaryData)));
-	}
+	// function printLspParams() public view {
+	// 	console.log(lspParams.pairName);
+	// 	console.log(lspParams.expirationTimestamp);
+	// 	console.log(lspParams.collateralPerPair);
+	// 	console.log(string(abi.encodePacked("longSynthName: ", lspParams.longSynthName)));
+	// 	console.log(string(abi.encodePacked("longSynthSymbol: ", lspParams.longSynthSymbol)));
+	// 	console.log(string(abi.encodePacked("shortSynthName: ", lspParams.shortSynthName)));
+	// 	console.log(string(abi.encodePacked("shortSynthSymbol: ", lspParams.shortSynthSymbol)));
+	// 	console.log(string(abi.encodePacked("customAncillaryData: ", lspParams.customAncillaryData)));
+	// }
 
 	function setLspParams() internal {
 		string memory strId = Strings.toString(newestFutureId);

@@ -12,6 +12,7 @@ import {TokenFactory} from "UMA/packages/core/contracts/financial-templates/comm
 import {IERC20Standard} from "UMA/packages/core/contracts/common/interfaces/IERC20Standard.sol";
 import {PoolInitializer} from "uniswapv3-periphery/contracts/base/PoolInitializer.sol";
 import {PeripheryImmutableState} from "uniswapv3-periphery/contracts/base/PeripheryImmutableState.sol";
+import {IUniswapV3Factory} from "uniswapv3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
@@ -43,13 +44,14 @@ import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 //     uint256 optimisticOracleProposerBond;
 // }
 
-contract UniswapV3Wrapper is PoolInitializer {
+contract UniswapV3Wrapper {
 	using SafeERC20 for IERC20;
 
 	uint24 constant FEE = 100;
 	// uint160 constant SQRT_PRICE = uint160(sqrt(1) * 2 ** 96);
 
-	INonfungiblePositionManager public nonfungiblePositionManager;
+	IUniswapV3Factory public immutable factory;
+	INonfungiblePositionManager public immutable manager;
 
 	// NFT deposit data
 	struct Deposit {
@@ -57,46 +59,40 @@ contract UniswapV3Wrapper is PoolInitializer {
 		uint128 liquidity;
 		address token0;
 		address token1;
-    }
-
-	constructor(address _uniswapV3Factory, address _WETH9, address _nonfungiblePositionManager) PeripheryImmutableState(_uniswapV3Factory, _WETH9) {
-		nonfungiblePositionManager = INonfungiblePositionManager(_nonfungiblePositionManager);
 	}
 
-	// helper function for computing square roots
-	function sqrt(uint y) internal pure returns (uint z) {
-		if (y > 3) {
-			z = y;
-			uint x = y / 2 + 1;
-			while (x < z) {
-				z = x;
-				x = (y / x + x) / 2;
-			}
-		} else if (y != 0) {
-			z = 1;
-		}
+	constructor(address _uniswapV3Factory, address _WETH9, address _nonfungiblePositionManager) {
+		factory = IUniswapV3Factory(_uniswapV3Factory);
+		manager = INonfungiblePositionManager(_nonfungiblePositionManager);
 	}
 
-	// creates a new pool and returns its address
-	function createPool(address token0, address token1) public returns (address pool) {
-		if (token0 > token1) {
-			return this.createAndInitializePoolIfNecessary(token1, token0, FEE, uint160(sqrt(1) * 2 ** 96));
-		}
-		return this.createAndInitializePoolIfNecessary(token0, token1, FEE, uint160(sqrt(1) * 2 ** 96));
-
-	}
+	// // helper function for computing square roots
+	// function sqrt(uint y) internal pure returns (uint z) {
+	// 	if (y > 3) {
+	// 		z = y;
+	// 		uint x = y / 2 + 1;
+	// 		while (x < z) {
+	// 			z = x;
+	// 			x = (y / x + x) / 2;
+	// 		}
+	// 	} else if (y != 0) {
+	// 		z = 1;
+	// 	}
+	// }
 
 	// creates the following liquidity pools and returns their addresses:
 	// - lpPool: long/short
 	// - collateralPoolLong: long/collateral
 	// - collateralPoolShort: short/collateral
-	function createLpAndCollateralPools(address long, address short, address collateral) external returns (address lpPool, address collateralPoolLong, address collateralPoolShort) {
+	function createLpAndCollateralPools(address long, address short, address collateral) external returns (address lpPool, address collatPoolLong, address collatPoolShort) {
 		require (long != address(0), "Invalid long address");
 		require (short != address(0), "Invalid short address");
 		require (collateral != address(0), "Invalid collateral address");
-		lpPool = createPool(long, short);
-		collateralPoolLong = createPool(long, collateral);
-		collateralPoolShort = createPool(short, collateral);
+		lpPool = factory.createPool(long, short, FEE);
+		collatPoolLong = factory.createPool(long, collateral, FEE);
+		collatPoolShort = factory.createPool(short, collateral, FEE);
+
+		return (lpPool, collatPoolLong, collatPoolShort);
 	}
 
 	// sells the specified token for the other token in the specified pool
@@ -115,8 +111,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 		require (token0Amount > 0, "Amount must be greater than 0");
 		require (token1Amount > 0, "Amount must be greater than 0");
 
-		TransferHelper.safeApprove(token0, address(nonfungiblePositionManager), token0Amount);
-		TransferHelper.safeApprove(token1, address(nonfungiblePositionManager), token1Amount);
+		TransferHelper.safeApprove(token0, address(manager), token0Amount);
+		TransferHelper.safeApprove(token1, address(manager), token1Amount);
 
 		INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
 			token0: token0,
@@ -132,16 +128,8 @@ contract UniswapV3Wrapper is PoolInitializer {
 			deadline: block.timestamp
 		});
 
-		(tokenId, liquidity, amount0, amount1) = nonfungiblePositionManager.mint(params);
+		(tokenId, liquidity, amount0, amount1) = manager.mint(params);
 
 		return (tokenId, liquidity, amount0, amount1);
-	}
-
-	function uniswapV3MintCallback(
-        uint256 amount0Owed,
-        uint256 amount1Owed,
-        bytes calldata data
-    ) external {
-		require (1 == 2, "SHIIIT!");
 	}
 }

@@ -62,6 +62,10 @@ contract Api {
         return address(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
     }
 
+    // function cheatGetBalance(FutureIdentifier calldata ident, address account) public view returns (uint256) {
+    //     return getBalance(ident, account);
+    // }
+
     function getBalance(FutureIdentifier calldata ident, address account) public view returns (uint256) {
         if (ident.name == 'pepe')
             return 10;
