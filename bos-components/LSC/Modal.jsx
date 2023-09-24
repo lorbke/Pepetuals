@@ -1,5 +1,6 @@
 State.init({
 	tokens: [],
+	search: ""
 });
 
 if (
@@ -54,13 +55,20 @@ const loadFutures = () => {
 		Ethers.provider().getSigner()
 	);
 	ctr.getFutureNames().then((test) => {
-		const tkns = Array.from(test, (_, i) => ethers.utils.parseBytes32String(test[i]));
-		State.update({ tokens: tkns });
+		const tkns = Array.from(test, (tkn, i) => ethers.utils.parseBytes32String(tkn));
+		if (state.search != "") {
+			State.update({ tokens: Array.from(tkns, (tkn, i) => tkn.includes(state.search) ? tkn : null).filter((x) => x != null)});
+		} else {
+			State.update({ tokens: tkns });
+		}
 	});
 };
 loadFutures();
 
-console.log(state.tokens);
+const onSearch = (e) => {
+	State.update({ search: e.target.value });
+	loadFutures();
+};
 
 const modalId = (Math.random() + 1).toString(36).substring(7);
 const onCloseBtnClick = (e) => {
@@ -90,7 +98,7 @@ return (<ModalStyle>
 					</svg>
 				</CloseButton>
 			</div>
-			<input className="form-control mt-2" type="text" placeholder="🔎 Search" aria-label="Search"/>
+			<input className="form-control mt-2" type="text" placeholder="🔎 Search" aria-label="Search" onChange={(e) => onSearch(e)}/>
 			<div className="table-responsive mt-3 rounded">
 				<table className="table table-hover m-0">
 					<thead>
@@ -100,7 +108,7 @@ return (<ModalStyle>
 						</tr>
 					</thead>
 					<tbody>
-						{Array.from(state.tokens).map((tkn, i) => (<tr key={i} onClick={onClose}>
+						{Array.from(state.tokens).map((tkn, i) => (<tr key={i} onClick={() => props.onSelect(tkn)} style={(props.selected != tkn) || (props.selected == undefined) ? { cursor: "pointer" } : {}}>
 							<th scope="row">{i}</th>
 							<td>{tkn}</td>
 						</tr>))}

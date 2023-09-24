@@ -5,7 +5,8 @@ State.init({
 	input: 0,
 	perpetual: false,
 	leverage: 1,
-	openModal: false
+	openModal: false,
+	selectedOutput: undefined
 });
 
 const contractABI = fetch("https://raw.githubusercontent.com/lorbke/ETHGlobal-New-York/MultiLSP/contract_abi.json");
@@ -85,23 +86,24 @@ const ValueInput = styled.input`
 	padding: 0px;
 	appearance: textfield;
 `;
-const InputContainer = (statename) => {
+const InputContainer = (text, statename, onClick) => {
 	return (
-	<div className="bg-light rounded p-2 d-flex">
-		<ValueInput
-			inputmode="decimal"
-			autocomplete="off"
-			autocorrect="off"
-			type="text"
-			pattern="^[0-9]*[.,]?[0-9]*$"
-			placeholder="0"
-			minlength="1"
-			maxlength="9"
-			spellcheck="false"
-			value={state[statename]}
-		/>
-		<button onClick={() => State.update({ openModal: true })} className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "100px" }}>USDC</button>
-	</div>
+		<div className="bg-light rounded p-2 d-flex">
+			<ValueInput
+				inputmode="decimal"
+				autocomplete="off"
+				autocorrect="off"
+				type="text"
+				pattern="^[0-9]*[.,]?[0-9]*$"
+				placeholder="0"
+				minlength="1"
+				maxlength="9"
+				spellcheck="false"
+				value={onClick != undefined ? state[statename] : ""}
+				disabled={onClick == undefined}
+			/>
+			<button onClick={onClick != undefined ? onClick : undefined} className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "130px" }} disabled={onClick == undefined}>{text}</button>
+		</div>
 	);
 };
 
@@ -173,7 +175,11 @@ return (<MainStyle>
 		chainData: state.chainId != undefined ? JSON.parse(contractData.body)[state.chainId.toString()] : undefined,
 		contractABI: contractABI.body,
 		show: state.openModal,
-		onClose: () => State.update({ openModal: false })
+		onClose: () => State.update({ openModal: false }),
+		selected: state.selectedOutput,
+		onSelect: (token) => {
+			State.update({ selectedOutput: token, openModal: false });
+		}
 	}}/>
 	<div className="h-100 w-100 d-flex justify-content-center">
 	  <div
@@ -195,7 +201,7 @@ return (<MainStyle>
 			  Short
 			</button>
 		  </div>
-		  <InputContainer />
+		  {InputContainer("USDC", "input", undefined)}
 		  <div
 			className="bg-light z-2 d-flex justify-content-center"
 			style={{
@@ -221,7 +227,7 @@ return (<MainStyle>
 			  </svg>
 			</div>
 		  </div>
-		  {InputContainer("input")}
+		  {InputContainer(state.selectedOutput == undefined ? "Pls. Select!" : state.selectedOutput, "input", () => State.update({ openModal: true }))}
 		  <div className="d-flex justify-content-between align-items-center my-2">
 			<label>Perpetual</label>
 			<ToggleSwitch onChange={(e) => State.update({ perpetual: e.target.checked })} value={state.perpetual}/>
