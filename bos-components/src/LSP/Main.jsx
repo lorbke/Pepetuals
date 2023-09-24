@@ -140,7 +140,7 @@ return (
 					{state.tokens.map((token, i) => (<tr key={i} onClick={onClose}>
 						<th scope="row">{token.name}</th>
 						<td>{token.long == true ? "Long" : "Short"}</td>
-						<td>{(token.amount / 1e6).toString()}</td>
+						<td>{token.amount.toString()}</td>
 						<td>{token.period == 4294967295 ? "True": "False"}</td>
 						<td><button type="button" className="btn btn-primary" onClick={() => sellPosition(token)}>Sell</button></td>
 					</tr>))}
