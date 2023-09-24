@@ -4,7 +4,8 @@ State.init({
 	long: true,
 	input: 0,
 	perpetual: false,
-	leverage: 1
+	leverage: 1,
+	openModal: false
 });
 
 const contractABI = fetch("https://raw.githubusercontent.com/lorbke/ETHGlobal-New-York/MultiLSP/contract_abi.json");
@@ -37,8 +38,8 @@ if (getAccountId() !== null) {
 		.then((chainIdData) => {
 		if (chainIdData?.chainId) {
 			State.update({
-			address: getAccountId(),
-			chainId: chainIdData.chainId,
+				address: getAccountId(),
+				chainId: chainIdData.chainId,
 			});
 		}
 	});
@@ -99,7 +100,7 @@ const InputContainer = (statename) => {
 			spellcheck="false"
 			value={state[statename]}
 		/>
-		<button className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "100px" }} disabled>USDC</button>
+		<button onClick={() => State.update({ openModal: true })} className="btn btn-secondary m-2 rounded-4" style={{ borderRadius: "25px", width: "100px" }}>USDC</button>
 	</div>
 	);
 };
@@ -168,6 +169,12 @@ const ToggleSwitch = ({onChange, value}) => {
 };
   
 return (<MainStyle>
+	<Widget src="pauldev.near/widget/LSC.Modal" props={{
+		chainData: state.chainId != undefined ? JSON.parse(contractData.body)[state.chainId.toString()] : undefined,
+		contractABI: contractABI.body,
+		show: state.openModal,
+		onClose: () => State.update({ openModal: false })
+	}}/>
 	<div className="h-100 w-100 d-flex justify-content-center">
 	  <div
 		className="card shadow m-2 border-0 rounded-xl"
