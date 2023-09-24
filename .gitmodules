@@ -7,3 +7,9 @@
 [submodule "backend/lib/openzeppelin-contracts"]
 	path = backend/lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "backend/lib/v3-periphery-foundry"]
+	path = backend/lib/uniswapv3-periphery
+	url = https://github.com/gakonst/v3-periphery-foundry
+[submodule "backend/lib/v3-core"]
+	path = backend/lib/uniswapv3-core
+	url = https://github.com/Uniswap/v3-core

@@ -1,69 +1,39 @@
-# ETHGlobal-New-York
+# Pepetuals
 
-## Frontend:
-### Trade Widget:
-- Stock selector with stock list
-- Perpetual On/Off
-- Direction (Long / Short)
-- You pay field
-- You receive field
-- Buy button
-- Wallet connect button
-### Position list:
-- active positions:
-- stock
-- amount
-- current value
-- close position button
-- direction long/short
+This project is a new approach to perpetual onchain futures. There have been quite a few approaches in the past, but we believe that none of them match our idea, especially in terms of stability.
 
-### Advanced Stock list (v2):
-tradable stocks:
-stock
-amount
-current value?
-### Stock trade page (v2):
-
+The presentation can be found here:
+https://docs.google.com/presentation/d/1SnWZmQYaW7W_3zFY-c6oZT-BYV2DgJLPcIJjkJs1Hws/edit#slide=id.g282cbbbe77c_0_107
 
 ## Contracts
 
-### Multi LSP:
-- string name
-- map period_ids -> lsp-pair address
-- struct Period
-- (wrapper functions to get lsp-pair information)
-- start_period()
-- create uniswapv3 pool
-- long/short
-- long/usdc
-- short/usdc
-- add pool liquidity
-- long/short pool
-- create lsppair
-- resolve_period()
-- by how much percent did the stock change?
-- mock_resolve_period()
-- mock_start_period()
-### Rolling Pool:
-- perpetual tokens
-### Api Contract
-- map stock_id -> multi lsp address
-- get_stock_names returns string[]
-- register_stock(name, leverage…)
-- get_price(stock_id, is_long, is_perpetual, leverage)
-- long(stock_id, is_long, is_perpetual, leverage, amount)
-- mint lsp
-- sell opposite side on uniswap
-- sell(stock_id, is_long, leverage, period_id, amount)
-- redeem(stock_id, leverage, period_id, amount)
-- period_id MAX_INT = perpetual
-- demo function
-- start new period
-- end period and resolve price
-- roll over pool
+### MultiLongShortPair:
+Deploys long short pairs for a given asset.
+Manages the uniswap pools.
+
+### RollingPool:
+Deposit futures into the pool. They will automatically be converted into new shares towards the end of each period and can be withdrawn at any point.
+Bots have to call startRollover as well as rollDeposit / rollWithdraw. As an incentive bonus tokens are given out.
+
+### UniswapV3Wrapper:
+Wrapper for the uniswap pool for more easy usage.
+
+### ApiContract
+Mainly used as a wrapper for easy usability from the frontend.
 
 
+## Frontend:
 
-### Leveraged Trades (v2)
 
-### Perpetual Shorts (v2)
+# Deploy
+
+To test it yourself some solidity versions in the uniswap contracts have to be changed from =0.7.6 to >=0.7.6
+NoDelegateCall.sol
+UniswapV3Factory.sol
+UniswapV3PoolDeployer.sol
+lib/uniswapv3-periphery/contracts/base/LiquidityManagement.sol (=0.7.6)
+lib/uniswapv3-periphery/contracts/libraries/CallbackValidation.sol (=0.7.6)
+lib/uniswapv3-periphery/contracts/interfaces/external/IWETH9.sol (=0.7.6)
+
+
+Some tests aren't fully implemented and are expected to fail.

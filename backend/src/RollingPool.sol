@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "./MultiLongShortPair.sol";
+import "./IMultiLongShortPair.sol";
 
 contract ShareToken is ERC20, Ownable {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) Ownable() {}
@@ -24,24 +24,23 @@ contract ShareToken is ERC20, Ownable {
 contract RollingPool {
     using Math for uint256;
 
-    MultiLongShortPair public lsp;
+    IMultiLongShortPair public mlsp;
     ShareToken public share;
     IERC20 public oldFuture;
     IERC20 public newFuture;
 
-    uint32 newestFutureId;
-    // ITWAMM public twamm;
+    bool public rolling;
+    uint256 public rollingStartBlock;
 
-    bool rolling;
-    uint256 rollingStartBlock;
-    uint256 rollFraction;
-
-    constructor(MultiLongShortPair _lsp) {
+    constructor(IMultiLongShortPair _mlsp) {
         share = new ShareToken("Pool Shares", "POOL");
-        lsp = _lsp;
-        newFuture = lsp.activeFuture().longToken;
+        mlsp = _mlsp;
+        newFuture = IERC20(mlsp.getNewestLongToken());
         rolling = false;
-        // twamm = new TWAMM();
+    }
+
+    function getFutureBalance(address account) external view returns (uint256) {
+        return previewRedeem(share.balanceOf(account));
     }
 
     function previewDeposit(uint256 futures) public view virtual returns (uint256) {
@@ -56,10 +55,6 @@ contract RollingPool {
         share.mint(msg.sender, shares);
     }
 
-    function getBalance(address account) public view returns (uint256) {
-        return previewRedeem(share.balanceOf(account));
-    }
-
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return _convertToFutures(shares, Math.Rounding.Down);
     }
@@ -72,7 +67,7 @@ contract RollingPool {
     }
 
     function startRollover() external {
-        IERC20 future = lsp.activeFuture().longToken;
+        IERC20 future = IERC20(mlsp.getNewestLongToken());
         require(future != newFuture, "no new period");
         oldFuture = newFuture;
         newFuture = future;
@@ -83,21 +78,37 @@ contract RollingPool {
 
     function rollDeposit(uint256 newFutures) external {
         require(rolling == true, "not rolling");
-        uint256 feeDuration = block.number - rollingStartBlock;
-        uint256 feeTokens = newFutures.mulDiv(feeDuration, 100000, Math.Rounding.Down);
+        uint256 feeDuration = block.number - rollingStartBlock + 1;
+        uint256 feeTokens = newFutures.mulDiv(100000 + feeDuration, 100000, Math.Rounding.Down);
         newFuture.transferFrom(msg.sender, address(this), newFutures);
-        oldFuture.transfer(msg.sender, newFutures + feeTokens);
+        oldFuture.transfer(msg.sender, feeTokens);
+        _tryEndRollover();
     }
 
-    function totalAssets() internal view virtual returns (uint256) {
+    function rollWithdraw(uint256 oldFutures) external {
+        require(rolling == true, "not rolling");
+        uint256 feeDuration = block.number - rollingStartBlock;
+        uint256 feeTokens = oldFutures.mulDiv(100000, feeDuration + 100000, Math.Rounding.Down);
+        newFuture.transferFrom(msg.sender, address(this), feeTokens);
+        oldFuture.transfer(msg.sender, oldFutures);
+        _tryEndRollover();
+    }
+
+    function _tryEndRollover() internal {
+        if (oldFuture.balanceOf(address(this)) == 0) {
+            rolling = false;
+        }
+    }
+
+    function _totalAssets() internal view virtual returns (uint256) {
         return newFuture.balanceOf(address(this));
     }
 
     function _convertToShares(uint256 futures, Math.Rounding rounding) internal view virtual returns (uint256) {
-        return futures.mulDiv(share.totalSupply(), totalAssets() + 1, rounding);
+        return futures.mulDiv(share.totalSupply(), _totalAssets() + 1, rounding);
     }
 
     function _convertToFutures(uint256 shares, Math.Rounding rounding) internal view virtual returns (uint256) {
-        return shares.mulDiv(totalAssets() + 1, share.totalSupply() + 1, rounding);
+        return shares.mulDiv(_totalAssets() + 1, share.totalSupply() + 1, rounding);
     }
 }

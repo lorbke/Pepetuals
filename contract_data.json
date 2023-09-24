@@ -1,0 +1,27 @@
+{
+    "5": {
+        "name": "goerli",
+        "rpcUrl": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        "contractAddress": "0x8D9800f5035F915cB7f62e2fF0d505BB59E90b68",
+        "tokens": [
+            {
+                "name": "Consumer Price Index Long",
+                "symbol": "CPI1LONG",
+                "decimals": 18,
+                "address": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+            },
+            {
+                "name": "Crude Oil Long",
+                "symbol": "OIL1LONG",
+                "decimals": 18,
+                "address": "0x07865c6E87B9F70255377e024ace6630C1Eaa37F"
+            },
+            {
+                "name": "Pepe Long",
+                "symbol": "PEPE1LONG",
+                "decimals": 18,
+                "address": "0x9deB41242a3066c6114365B996E18D70A473556d"
+            }
+        ]
+    }
+}
