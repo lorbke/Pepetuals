@@ -1,5 +1,7 @@
 ## CREATED FOR ETHGLOBAL NEW YORK
 
+https://ethglobal.com/showcase/pepetuals-kyyw9
+
 <img width="398" alt="image" src="https://github.com/patrick-hacks/Pepetuals/assets/72362902/da1f8288-6a7b-4b89-98f1-6e168b252374">
 
 # Pepetuals
