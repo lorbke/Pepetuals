@@ -1,3 +1,7 @@
+## CREATED FOR ETHGLOBAL NEW YORK
+
+<img width="398" alt="image" src="https://github.com/patrick-hacks/Pepetuals/assets/72362902/da1f8288-6a7b-4b89-98f1-6e168b252374">
+
 # Pepetuals
 
 This project is a new approach to perpetual onchain futures. There have been quite a few approaches in the past, but we believe that none of them match our idea, especially in terms of stability.
